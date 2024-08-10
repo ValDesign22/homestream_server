@@ -3,6 +3,7 @@ import { readdirSync, statSync } from "fs";
 import { join } from "path";
 
 interface IFolderItem {
+  id: number;
   name: string;
   path: string;
   children?: IFolderItem[];
@@ -13,6 +14,7 @@ const foldersHandler = async (req: Request, res: Response) => {
   if (!FILES_FOLDER) return res.status(500).send("Files folder not set");
 
   const stack: IFolderItem[] = [{
+    id: 0,
     name: FILES_FOLDER.split('/').pop() || '',
     path: FILES_FOLDER,
     children: []
@@ -31,6 +33,7 @@ const foldersHandler = async (req: Request, res: Response) => {
 
       if (itemStat.isDirectory()) {
         const folder: IFolderItem = {
+          id: current.id + 1,
           name: item,
           path: itemPath,
           children: []
