@@ -23,9 +23,9 @@ const foldersHandler = async (req: Request, res: Response) => {
     const current = stack.pop();
     if (!current) continue;
 
-    const dirItems = readdirSync(current.path);
+    const items = readdirSync(current.path);
 
-    for (const item of dirItems) {
+    for (const item of items) {
       const itemPath = join(current.path, item);
       const itemStat = statSync(itemPath);
 
@@ -39,6 +39,8 @@ const foldersHandler = async (req: Request, res: Response) => {
         stack.push(folder);
       }
     }
+
+    if (current.children && current.children.length === 0) delete current.children;
   }
 
   res.status(200).json(root.children);
