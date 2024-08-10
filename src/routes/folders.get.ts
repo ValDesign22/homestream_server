@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { readdirSync, statSync } from "fs";
+import { join } from "path";
 
 interface IFolderItem {
   name: string;
@@ -11,40 +12,36 @@ const foldersHandler = async (req: Request, res: Response) => {
   const FILES_FOLDER = process.env.FILES_FOLDER;
   if (!FILES_FOLDER) return res.status(500).send("Files folder not set");
 
-  const stack = [FILES_FOLDER];
-  const folders: IFolderItem[] = [];
+  const stack: IFolderItem[] = [{
+    name: FILES_FOLDER.split('/').pop() || '',
+    path: FILES_FOLDER,
+    children: []
+  }];
+  const root = stack[0];
 
   while (stack.length) {
     const current = stack.pop();
     if (!current) continue;
-    const stat = statSync(current);
 
-    if (stat.isFile()) continue;
+    const dirItems = readdirSync(current.path);
 
-    const dir = readdirSync(current);
-    for (const item of dir) {
-      const itemPath = `${current}/${item}`;
+    for (const item of dirItems) {
+      const itemPath = join(current.path, item);
       const itemStat = statSync(itemPath);
 
-      if (itemStat.isFile()) continue;
-
-      const folder: IFolderItem = {
-        name: item,
-        path: itemPath,
-      };
-
       if (itemStat.isDirectory()) {
-        folder.children = [];
-        stack.push(itemPath);
+        const folder: IFolderItem = {
+          name: item,
+          path: itemPath,
+          children: []
+        };
+        current.children?.push(folder);
+        stack.push(folder);
       }
-
-      const parent = folders.find((f) => f.path === current);
-      if (parent) parent.children?.push(folder);
-      else folders.push(folder);
     }
   }
 
-  res.status(200).send(folders);
+  res.status(200).json(root.children);
 };
 
 export { foldersHandler };
