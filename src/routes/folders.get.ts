@@ -9,6 +9,21 @@ interface IFolderItem {
   children?: IFolderItem[];
 }
 
+const getLastId = (root: IFolderItem): number => {
+  let lastId = root.id;
+  const stack = [root];
+
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current) continue;
+
+    if (current.id > lastId) lastId = current.id;
+    if (current.children) stack.push(...current.children);
+  }
+
+  return lastId;
+};
+
 const foldersHandler = async (req: Request, res: Response) => {
   const FILES_FOLDER = process.env.FILES_FOLDER;
   if (!FILES_FOLDER) return res.status(500).send("Files folder not set");
@@ -33,7 +48,7 @@ const foldersHandler = async (req: Request, res: Response) => {
 
       if (itemStat.isDirectory()) {
         const folder: IFolderItem = {
-          id: current.id + 1,
+          id: getLastId(root) + 1,
           name: item,
           path: itemPath,
           children: []
