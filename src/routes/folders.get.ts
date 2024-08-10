@@ -3,8 +3,8 @@ import { readdirSync, statSync } from "fs";
 
 interface IFolderItem {
   name: string;
-  parent: string;
   path: string;
+  children?: IFolderItem[];
 }
 
 const foldersHandler = async (req: Request, res: Response) => {
@@ -28,13 +28,19 @@ const foldersHandler = async (req: Request, res: Response) => {
 
       if (itemStat.isFile()) continue;
 
-      folders.push({
+      const folder: IFolderItem = {
         name: item,
-        parent: current,
         path: itemPath,
-      });
+      };
 
-      if (itemStat.isDirectory()) stack.push(itemPath);
+      if (itemStat.isDirectory()) {
+        folder.children = [];
+        stack.push(itemPath);
+      }
+
+      const parent = folders.find((f) => f.path === current);
+      if (parent) parent.children?.push(folder);
+      else folders.push(folder);
     }
   }
 
