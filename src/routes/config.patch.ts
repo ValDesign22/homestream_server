@@ -3,6 +3,7 @@ import { IConfig } from '../utils/types';
 import { save_config } from '../utils/config';
 
 const configHandler = async (req: Request, res: Response) => {
+  console.log(req.body)
   const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
   console.log(folders, tmdb_language)
 
