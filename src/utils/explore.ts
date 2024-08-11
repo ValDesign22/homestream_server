@@ -118,13 +118,12 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
 
       console.log(`TV Show: ${tvshow.title} - Season: ${item.name}`);
 
-      let season_number = item.name.split(' ').pop();
-      if (season_number && season_number.length === item.name.length && season_number.split('E').every((char) => !isNaN(parseInt(char)))) {
-        season_number = season_number;
-      } else {
-        console.log(`Invalid season number: ${season_number}`);
+      const season_match = item.name.match(/\d+/g);
+      if (!season_match) {
+        console.log(`Invalid season number: ${item.name}`);
         continue;
       }
+      const season_number = season_match[0];
 
       console.log(`Season number: ${season_number}`);
       const season = await search_tvshow_season(tvshow.id, parseInt(season_number), config);
