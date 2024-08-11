@@ -4,6 +4,7 @@ import { save_config } from '../utils/config';
 
 const configHandler = async (req: Request, res: Response) => {
   const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
+  console.log(folders, tmdb_language)
 
   if (!folders || !tmdb_language) {
     return res.status(400).send('Missing required fields');

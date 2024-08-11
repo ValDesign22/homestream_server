@@ -20,6 +20,12 @@ app.get('/folders', foldersHandler);
 app.get('/setup', setupHandler);
 app.get('/video', videoHandler);
 
+app.use((req, res, next) => {
+  console.log(`Request: ${req.method} ${req.url}`);
+  console.log(`Body: ${JSON.stringify(req.body)}`);
+  next();
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
