@@ -128,11 +128,13 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
       const season = await search_tvshow_season(tvshow.id, parseInt(season_number), config);
       if (season) {
         const episodes = await explore_tvshow_episodes(config, folder, tvshow, season, `${current_path}/${item.name}`);
+        console.log(`TV Show: ${tvshow.title} - Season: ${season.name} - Episodes: ${episodes}`);
         seasons.push({
           ...season,
           episodes,
           path: `${current_path}/${item.name}`,
         });
+        console.log(seasons);
       }
     }
   }
@@ -162,6 +164,8 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
         continue;
       }
 
+      console.log(`TV Show: ${tvshow.title} - Season: ${season.name} - Episode: ${item.name}`);
+
       const existing_tvshow = existing_tvshows.find((t) => t.path === tvshow.path);
       if (existing_tvshow) {
         const existing_season = existing_tvshow.seasons.find((s) => s.path === season.path);
@@ -189,10 +193,12 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
 
       const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
       if (episode) {
+        console.log(`Episode details: ${episode}`);
         episodes.push({
           ...episode,
           path: `${current_path}/${item.name}`,
         });
+        console.log(`Episodes: ${episodes}`);
       }
     }
   }
