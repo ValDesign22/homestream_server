@@ -18,9 +18,10 @@ const create_request = async (url: string) => {
   return response.data;
 };
 
-const find_image_path = (images: any[], language: string): string | null => {
+const find_image_path = (images: any[], language: string | null): string | null => {
   for (const image of images) {
-    if (image.iso_639_1 === language || image.iso_639_1 === 'en') return image.file_path;
+    if (!language) return image.file_path;
+    if (image.iso_639_1 === language) return image.file_path;
   }
   return null;
 };
@@ -41,9 +42,9 @@ const fetch_images = async (id: number, media_type: EMediaType, config: IConfig)
   const { tmdb_language } = config;
 
   return {
-    backdrop_path: find_image_path(images.backdrops, tmdb_language) || find_image_path(images.backdrops, 'en'),
-    logo_path: find_image_path(images.logos, tmdb_language) || find_image_path(images.logos, 'en'),
-    poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en'),
+    backdrop_path: find_image_path(images.backdrops, tmdb_language) || find_image_path(images.backdrops, 'en') || find_image_path(images.backdrops, null),
+    logo_path: find_image_path(images.logos, tmdb_language) || find_image_path(images.logos, 'en') || find_image_path(images.logos, null),
+    poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
   };
 };
 
@@ -159,7 +160,7 @@ const search_tvshow_season = async (tvshow_id: number, season_number: number, co
 
   const images = await create_request(posters_url);
 
-  const poster_path = find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en');
+  const poster_path = find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null);
 
   return {
     id: season_response.id,
@@ -184,7 +185,7 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
 
   const images = await create_request(stills_url);
 
-  const still_path = find_image_path(images.stills, tmdb_language) || find_image_path(images.stills, 'en');
+  const still_path = find_image_path(images.stills, tmdb_language) || find_image_path(images.stills, 'en') || find_image_path(images.stills, null);
 
   return {
     id: episode_response.id,

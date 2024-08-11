@@ -83,7 +83,6 @@ const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise
       const tvshow = await search_tvshow(title, date, config);
       if (tvshow) {
         const seasons = await explore_tvshow_seasons(config, folder, tvshow, `${current_path}/${item.name}`);
-        console.log(`TV Show: ${tvshow.title} - Seasons: ${seasons}`);
         tvshows.push({
           ...tvshow,
           seasons,
@@ -112,31 +111,20 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
 
-      if (item.isFile()) {
-        continue;
-      }
-
-      console.log(`TV Show: ${tvshow.title} - Season: ${item.name}`);
+      if (item.isFile()) continue;
 
       const season_match = item.name.match(/\d+/g);
-      if (!season_match) {
-        console.log(`Invalid season number: ${item.name}`);
-        continue;
-      }
+      if (!season_match) continue;
       const season_number = season_match[0];
 
-      console.log(`Season number: ${season_number}`);
       const season = await search_tvshow_season(tvshow.id, parseInt(season_number), config);
-      console.log(`Season details: ${season}`);
       if (season) {
         const episodes = await explore_tvshow_episodes(config, folder, tvshow, season, `${current_path}/${item.name}`);
-        console.log(`TV Show: ${tvshow.title} - Season: ${season.name} - Episodes: ${episodes}`);
         seasons.push({
           ...season,
           episodes,
           path: `${current_path}/${item.name}`,
         });
-        console.log(seasons);
       }
     }
   }
@@ -166,8 +154,6 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
         continue;
       }
 
-      console.log(`TV Show: ${tvshow.title} - Season: ${season.name} - Episode: ${item.name}`);
-
       const existing_tvshow = existing_tvshows.find((t) => t.path === tvshow.path);
       if (existing_tvshow) {
         const existing_season = existing_tvshow.seasons.find((s) => s.path === season.path);
@@ -195,12 +181,10 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
 
       const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
       if (episode) {
-        console.log(`Episode details: ${episode}`);
         episodes.push({
           ...episode,
           path: `${current_path}/${item.name}`,
         });
-        console.log(`Episodes: ${episodes}`);
       }
     }
   }
