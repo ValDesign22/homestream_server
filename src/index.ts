@@ -21,8 +21,12 @@ app.get('/setup', setupHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {
-  console.log(`Request: ${req.method} ${req.url}`);
-  console.log(`Body: ${JSON.stringify(req.body)}`);
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.path} - ${res.statusCode}`);
+    console.log('Headers:', res.getHeaders());
+    console.log('Body:', req.body);
+  });  
+
   next();
 });
 
