@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 
 import { configHandler } from './routes/config.patch';
+import { storesHandler } from './routes/stores.get';
 import { foldersHandler } from './routes/folders.get';
 import { setupHandler } from './routes/setup.get';
 import { videoHandler } from './routes/video.get';
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.patch('/config', configHandler);
 app.get('/folders', foldersHandler);
 app.get('/setup', setupHandler);
+app.get('/stores', storesHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {
