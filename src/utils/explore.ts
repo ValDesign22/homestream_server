@@ -119,7 +119,7 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
       console.log(`TV Show: ${tvshow.title} - Season: ${item.name}`);
 
       let season_number = item.name.split(' ').pop();
-      if (season_number && season_number.length === item.name.length && season_number.split('').every((char) => !isNaN(parseInt(char)))) {
+      if (season_number && season_number.length === item.name.length && season_number.split('E').every((char) => !isNaN(parseInt(char)))) {
         season_number = season_number;
       } else {
         console.log(`Invalid season number: ${season_number}`);
