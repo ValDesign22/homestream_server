@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Levenshtein from 'levenshtein';
+import { distance } from 'fastest-levenshtein';
 import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
 
 const create_request = async (url: string) => {
@@ -59,9 +59,9 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
   let lowest_distance = Number.MAX_SAFE_INTEGER;
 
   for (const result of search_results) {
-    let distance = new Levenshtein(title, result.title).distance;
-    if (distance < lowest_distance) {
-      lowest_distance = distance;
+    let distanceResult = distance(title, result.title);
+    if (distanceResult < lowest_distance) {
+      lowest_distance = distanceResult;
       best_match = result;
     }
   }
@@ -111,9 +111,9 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
   let lowest_distance = Number.MAX_SAFE_INTEGER;
 
   for (const result of search_results) {
-    let distance = new Levenshtein(title, result.title).distance;
-    if (distance < lowest_distance) {
-      lowest_distance = distance;
+    let distanceResult = distance(title, result.name);
+    if (distanceResult < lowest_distance) {
+      lowest_distance = distanceResult;
       best_match = result;
     }
   }
