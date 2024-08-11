@@ -83,9 +83,11 @@ const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise
       const tvshow = await search_tvshow(title, date, config);
       if (tvshow) {
         const seasons = await explore_tvshow_seasons(config, folder, tvshow, `${current_path}/${item.name}`);
+        console.log(`TV Show: ${tvshow.title} - Seasons: ${seasons}`);
         tvshows.push({
           ...tvshow,
           seasons,
+          path: `${current_path}/${item.name}`,
         });
       }
     }
@@ -113,6 +115,8 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
       if (item.isFile()) {
         continue;
       }
+
+      console.log(`TV Show: ${tvshow.title} - Season: ${item.name}`);
 
       let season_number = item.name.split(' ').pop();
       if (season_number && season_number.length === item.name.length && season_number.split('').every((char) => !isNaN(parseInt(char)))) {
