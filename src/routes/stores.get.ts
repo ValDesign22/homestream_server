@@ -11,6 +11,8 @@ const storesHandler = async (req: Request, res: Response) => {
   for (const folder of config.folders) {
     stores[folder.name] = load_store(folder);
   }
+
+  res.status(200).send(stores);
 };
 
 export { storesHandler };
