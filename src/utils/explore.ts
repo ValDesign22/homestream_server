@@ -125,7 +125,9 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
         continue;
       }
 
+      console.log(`Season number: ${season_number}`);
       const season = await search_tvshow_season(tvshow.id, parseInt(season_number), config);
+      console.log(`Season details: ${season}`);
       if (season) {
         const episodes = await explore_tvshow_episodes(config, folder, tvshow, season, `${current_path}/${item.name}`);
         console.log(`TV Show: ${tvshow.title} - Season: ${season.name} - Episodes: ${episodes}`);
