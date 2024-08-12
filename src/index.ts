@@ -7,6 +7,7 @@ import { detailsHandler } from './routes/details.get';
 import { foldersHandler } from './routes/folders.get';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
+import { previewHandler } from './routes/preview';
 import { videoHandler } from './routes/video.get';
 
 const app = express();
@@ -22,6 +23,7 @@ app.get('/details', detailsHandler);
 app.get('/folders', foldersHandler);
 app.get('/setup', setupHandler);
 app.get('/stores', storesHandler);
+app.get('/preview', previewHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {
