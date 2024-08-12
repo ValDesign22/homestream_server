@@ -20,7 +20,6 @@ const create_request = async (url: string) => {
 
 const find_image_path = (images: any[], language: string | null): string | null => {
   for (const image of images) {
-    if (!language) return image.file_path;
     if (image.iso_639_1 === language) return image.file_path;
   }
   return null;
@@ -42,7 +41,7 @@ const fetch_images = async (id: number, media_type: EMediaType, config: IConfig)
   const { tmdb_language } = config;
 
   return {
-    backdrop_path: find_image_path(images.backdrops, tmdb_language) || find_image_path(images.backdrops, 'en') || find_image_path(images.backdrops, null),
+    backdrop_path: find_image_path(images.backdrops, null),
     logo_path: find_image_path(images.logos, tmdb_language) || find_image_path(images.logos, 'en') || find_image_path(images.logos, null),
     poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
   };
