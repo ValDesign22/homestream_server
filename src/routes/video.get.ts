@@ -1,16 +1,18 @@
 import { Request, Response } from 'express';
 import { createReadStream, statSync } from 'fs';
-import path from 'path';
+import { getVideoItemById } from '../utils/video';
 
 const videoHandler = (req: Request, res: Response) => {
-  const pathQuery = req.query.path;
+  const idQuery = req.query.id;
 
-  if (!pathQuery) return res.status(400).send('No video path provided');
+  if (!idQuery) return res.status(400).send('No video path provided');
 
-  const decodedPath = decodeURIComponent(pathQuery as string);
-  const VIDEOS_FOLDER = process.env.VIDEOS_FOLDER;
-  if (!VIDEOS_FOLDER) return res.status(500).send('Videos folder not set');
-  const videoPath = path.join(VIDEOS_FOLDER, decodedPath);
+
+  const videoItem = getVideoItemById(parseInt(idQuery as string, 10));
+  if (!videoItem) return res.status(404).send('Video not found');
+
+  const videoPath = videoItem.path;
+  if (!videoPath) return res.status(404).send('Video has no path');
 
   const stat = statSync(videoPath);
 
