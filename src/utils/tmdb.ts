@@ -197,4 +197,25 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
   };
 };
 
-export { search_movie, search_tvshow, search_tvshow_season, search_tvshow_episode };
+const search_video = async (id: number, media_type: EMediaType, config: IConfig): Promise<string | null> => {
+  let base_url;
+  switch (media_type) {
+    case EMediaType.Movies:
+      base_url = 'https://api.themoviedb.org/3/movie';
+      break;
+    case EMediaType.TvShows:
+      base_url = 'https://api.themoviedb.org/3/tv';
+      break;
+  }
+
+  const videos = await create_request(`${base_url}/${id}/videos?language=${config.tmdb_language}`);
+  if (!videos || !videos.results || videos.results.length === 0) return null;
+
+  for (const video of videos.results) {
+    if (video.type === 'Trailer' && video.site === 'YouTube') return `https://www.youtube.com/watch?v=${video.key}`;
+  }
+
+  return null;
+};
+
+export { search_movie, search_tvshow, search_tvshow_season, search_tvshow_episode, search_video };

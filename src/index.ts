@@ -3,9 +3,10 @@ import 'dotenv/config';
 import express from 'express';
 
 import { configHandler } from './routes/config.patch';
-import { storesHandler } from './routes/stores.get';
+import { detailsHandler } from './routes/details.get';
 import { foldersHandler } from './routes/folders.get';
 import { setupHandler } from './routes/setup.get';
+import { storesHandler } from './routes/stores.get';
 import { videoHandler } from './routes/video.get';
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.patch('/config', configHandler);
+app.get('/details', detailsHandler);
 app.get('/folders', foldersHandler);
 app.get('/setup', setupHandler);
 app.get('/stores', storesHandler);
