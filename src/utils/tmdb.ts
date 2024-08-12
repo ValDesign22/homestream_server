@@ -212,7 +212,7 @@ const search_video = async (id: number, media_type: EMediaType, config: IConfig)
   if (!videos || !videos.results || videos.results.length === 0) return null;
 
   for (const video of videos.results) {
-    if (video.type === 'Trailer' && video.site === 'YouTube') return `https://www.youtube.com/watch?v=${video.key}`;
+    if (video.type === 'Trailer' && video.site === 'YouTube') return `https://www.youtube.com/embed/${video.key}`;
   }
 
   return null;
