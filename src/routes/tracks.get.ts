@@ -21,18 +21,19 @@ const tracksHandler = (req: Request, res: Response) => {
       }
 
       const tracks = metadata.streams.map((stream) => {
-        console.log(stream);
+        if (stream.index === 0) return null;
+        if (!stream.tags) return null;
         return {
           index: stream.index,
-          type: stream.codec_type,
-          language: stream.tags?.language || 'unknown'
+          codec_name: stream.codec_name,
+          codec_type: stream.codec_type,
+          channel_layout: stream.channel_layout,
+          language: stream.tags.language,
+          handler_name: stream.tags.handler_name,
         };
       });
 
-      const formattedTracks = tracks.map(track => {
-        const type = track.type === 'audio' ? 'Audio' : 'Subtitle';
-        return `${type} ${track.language}`;
-      });
+      const formattedTracks = tracks.filter((track) => track !== null);
 
       res.status(200).json({
         message: 'Available tracks',
