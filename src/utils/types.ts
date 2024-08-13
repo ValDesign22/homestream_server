@@ -51,7 +51,7 @@ export interface ITvShowSeason {
 export interface ITvShowEpisode {
   id: number,
   episode_number: number,
-  name: string,
+  title: string,
   overview: string,
   air_date: string,
   still_path: string | null,

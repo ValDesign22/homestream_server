@@ -189,7 +189,7 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
   return {
     id: episode_response.id,
     episode_number: episode_response.episode_number,
-    name: episode_response.name,
+    title: episode_response.name,
     overview: episode_response.overview,
     air_date: episode_response.air_date,
     still_path: still_path,
