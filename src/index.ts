@@ -4,10 +4,12 @@ import express from 'express';
 
 import { configHandler } from './routes/config.patch';
 import { detailsHandler } from './routes/details.get';
+import { extractHandler } from './routes/extract.get';
 import { foldersHandler } from './routes/folders.get';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
 import { previewHandler } from './routes/preview.get';
+import { tracksHandler } from './routes/tracks.get';
 import { videoHandler } from './routes/video.get';
 
 const app = express();
@@ -20,10 +22,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.patch('/config', configHandler);
 app.get('/details', detailsHandler);
+app.get('/extract', extractHandler);
 app.get('/folders', foldersHandler);
 app.get('/setup', setupHandler);
 app.get('/stores', storesHandler);
 app.get('/preview', previewHandler);
+app.get('/tracks', tracksHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {

@@ -5,7 +5,7 @@ import { IMovie, ITvShow, ITvShowEpisode } from '../utils/types';
 const detailsHandler = (req: Request, res: Response) => {
   const idQuery = req.query.id;
 
-  if (!idQuery) return res.status(400).send('No video path provided');
+  if (!idQuery) return res.status(400).send('No video id provided');
 
   let item: IMovie | ITvShow | ITvShowEpisode | null = searchItemById(parseInt(idQuery as string, 10));
   if (!item) {

@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
-import { readdirSync, statSync } from "fs";
-import { join } from "path";
+import { Request, Response } from 'express';
+import { readdirSync, statSync } from 'fs';
+import { join } from 'path';
 
 interface IFolderItem {
   id: number;
@@ -26,7 +26,7 @@ const getLastId = (root: IFolderItem): number => {
 
 const foldersHandler = async (req: Request, res: Response) => {
   const FILES_FOLDER = process.env.FILES_FOLDER;
-  if (!FILES_FOLDER) return res.status(500).send("Files folder not set");
+  if (!FILES_FOLDER) return res.status(500).send('Files folder not set');
 
   const stack: IFolderItem[] = [{
     id: 0,

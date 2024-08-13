@@ -1,13 +1,13 @@
-import { Request, Response } from "express";
-import { searchItemById } from "../utils/video";
-import { load_config } from "../utils/config";
-import { EMediaType } from "../utils/types";
-import { search_video } from "../utils/tmdb";
+import { Request, Response } from 'express';
+import { searchItemById } from '../utils/video';
+import { load_config } from '../utils/config';
+import { EMediaType } from '../utils/types';
+import { search_video } from '../utils/tmdb';
 
 const previewHandler = async (req: Request, res: Response) => {
   const idQuery = req.query.id;
 
-  if (!idQuery) return res.status(400).send('No video path provided');
+  if (!idQuery) return res.status(400).send('No video id provided');
 
   const item = searchItemById(parseInt(idQuery as string, 10));
   if (!item) return res.status(404).send('Video not found');

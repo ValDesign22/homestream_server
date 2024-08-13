@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
-import { load_config } from "../utils/config";
-import { load_store } from "../utils/store";
-import { IMovie, ITvShow } from "../utils/types";
+import { Request, Response } from 'express';
+import { load_config } from '../utils/config';
+import { load_store } from '../utils/store';
+import { IMovie, ITvShow } from '../utils/types';
 
 const storesHandler = async (req: Request, res: Response) => {
   const config = load_config();

@@ -5,8 +5,7 @@ import { getVideoItemById } from '../utils/video';
 const videoHandler = (req: Request, res: Response) => {
   const idQuery = req.query.id;
 
-  if (!idQuery) return res.status(400).send('No video path provided');
-
+  if (!idQuery) return res.status(400).send('No video id provided');
 
   const videoItem = getVideoItemById(parseInt(idQuery as string, 10));
   if (!videoItem) return res.status(404).send('Video not found');
