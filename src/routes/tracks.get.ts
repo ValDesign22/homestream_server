@@ -20,11 +20,14 @@ const tracksHandler = (req: Request, res: Response) => {
         return res.status(500).send('Error extracting video metadata');
       }
 
-      const tracks = metadata.streams.map((stream) => ({
-        index: stream.index,
-        type: stream.codec_type,
-        language: stream.tags?.language || 'unknown'
-      }));
+      const tracks = metadata.streams.map((stream) => {
+        console.log(stream);
+        return {
+          index: stream.index,
+          type: stream.codec_type,
+          language: stream.tags?.language || 'unknown'
+        };
+      });
 
       const formattedTracks = tracks.map(track => {
         const type = track.type === 'audio' ? 'Audio' : 'Subtitle';
