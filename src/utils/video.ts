@@ -14,9 +14,15 @@ const getVideoItemById = (id: number): IMovie | ITvShowEpisode | null => {
     const store = stores[storeKey];
     if (!store.length) continue;
 
-    if (store[0].hasOwnProperty('collection_id')) stack.push(...store as IMovie[]);
-    else for (const tvShow of store as ITvShow[]) {
-      for (const season of tvShow.seasons) stack.push(...season.episodes);
+    if (store[0].hasOwnProperty('collection_id')) {
+      console.log('its a movies store');
+      stack.push(...store as IMovie[]);
+    }
+    else {
+      console.log('its a tv shows store');
+      for (const tvShow of store as ITvShow[]) {
+        for (const season of tvShow.seasons) stack.push(...season.episodes);
+      }
     }
   }
 
@@ -26,7 +32,12 @@ const getVideoItemById = (id: number): IMovie | ITvShowEpisode | null => {
     if (visited.has(item.id)) continue;
     visited.add(item.id);
 
-    if (item.id === id) return item;
+    if (item.id === id) {
+      console.log('found the video item');
+      return item;
+    };
+
+    console.log('not the video item');
   }
 
   return null;
