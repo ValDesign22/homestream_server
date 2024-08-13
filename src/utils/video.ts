@@ -14,7 +14,7 @@ const getVideoItemById = (id: number): IMovie | ITvShowEpisode | null => {
     const store = stores[storeKey];
     if (!store.length) continue;
 
-    if ('collection_id' in store[0]) stack.push(...(store as IMovie[]));
+    if (store[0].hasOwnProperty('collection_id')) stack.push(...store as IMovie[]);
     else for (const tvShow of store as ITvShow[]) {
       for (const season of tvShow.seasons) stack.push(...season.episodes);
     }

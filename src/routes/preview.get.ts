@@ -14,7 +14,7 @@ const previewHandler = async (req: Request, res: Response) => {
 
   const config = load_config();
 
-  const media_type = 'collection_id' in item ? EMediaType.Movies : EMediaType.TvShows;
+  const media_type = item.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
   const preview_video_url = await search_video(item.id, media_type, config);
   if (!preview_video_url) return res.status(404).send('Preview video not found');
 
