@@ -65,7 +65,7 @@ watcher.on('all', async (event, path) => {
   const config = load_config();
   if (!config.folders) return;
   
-  if (event === 'add' || event === 'unlink' || event === 'change') {
+  if (event === 'add' || event === 'unlink') {
     for (const folder of config.folders) {
       if (!path.startsWith(folder.path)) continue;
       switch (folder.media_type) {
