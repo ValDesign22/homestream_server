@@ -65,17 +65,22 @@ watcher.on('all', async (event, path) => {
   const config = load_config();
   if (!config.folders) return;
   
-  for (const folder of config.folders) {
-    if (!path.startsWith(folder.path)) continue;
-    switch (folder.media_type) {
-      case EMediaType.Movies:
-        const movies = await explore_movies_folder(config, folder);
-        save_store(folder, movies);
-        break;
-      case EMediaType.TvShows:
-        const tvshows = await explore_tvshows_folder(config, folder);
-        save_store(folder, tvshows);
-        break;
+  if (event === 'add' || event === 'unlink' || event === 'change') {
+    const extension = path.split('.').pop();
+    if (!extension) return;
+    if (!['mp4', 'mkv', 'avi', 'mov', 'flv', 'wmv', 'webm'].includes(extension)) return;
+    for (const folder of config.folders) {
+      if (!path.startsWith(folder.path)) continue;
+      switch (folder.media_type) {
+        case EMediaType.Movies:
+          const movies = await explore_movies_folder(config, folder);
+          save_store(folder, movies);
+          break;
+        case EMediaType.TvShows:
+          const tvshows = await explore_tvshows_folder(config, folder);
+          save_store(folder, tvshows);
+          break;
+      }
     }
   }
 
