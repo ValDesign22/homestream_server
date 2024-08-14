@@ -11,6 +11,7 @@ import { storesHandler } from './routes/stores.get';
 import { previewHandler } from './routes/preview.get';
 import { tracksHandler } from './routes/tracks.get';
 import { videoHandler } from './routes/video.get';
+import { collectionHandler } from './routes/collection.get';
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.static('views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/collection', collectionHandler);
 app.patch('/config', configHandler);
 app.get('/details', detailsHandler);
 app.get('/extract', extractHandler);

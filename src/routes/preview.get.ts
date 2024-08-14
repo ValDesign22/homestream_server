@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { searchItemById } from '../utils/video';
+import { searchItemById } from '../utils/item';
 import { load_config } from '../utils/config';
 import { EMediaType } from '../utils/types';
 import { search_video } from '../utils/tmdb';

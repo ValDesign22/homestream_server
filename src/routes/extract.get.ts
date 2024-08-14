@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getVideoItemById } from '../utils/video';
+import { getVideoItemById } from '../utils/item';
 import ffmpeg from 'fluent-ffmpeg';
 
 const extractHandler = async (req: Request, res: Response) => {

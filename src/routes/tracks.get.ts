@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import ffmpeg from 'fluent-ffmpeg';
-import { getVideoItemById } from '../utils/video';
+import { getVideoItemById } from '../utils/item';
 
 const tracksHandler = (req: Request, res: Response) => {
   const { id } = req.query;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getVideoItemById, searchItemById } from '../utils/video';
+import { getVideoItemById, searchItemById } from '../utils/item';
 import { IMovie, ITvShow, ITvShowEpisode } from '../utils/types';
 
 const detailsHandler = (req: Request, res: Response) => {

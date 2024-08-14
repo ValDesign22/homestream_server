@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createReadStream, statSync } from 'fs';
-import { getVideoItemById } from '../utils/video';
+import { getVideoItemById } from '../utils/item';
 
 const videoHandler = (req: Request, res: Response) => {
   const idQuery = req.query.id;
@@ -35,7 +35,7 @@ const videoHandler = (req: Request, res: Response) => {
     });
 
     const stream = createReadStream(videoPath, { start, end });
-    
+
     stream.on('open', () => stream.pipe(res));
     stream.on('error', (streamErr) => {
       console.error(streamErr);
