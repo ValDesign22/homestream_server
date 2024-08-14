@@ -66,9 +66,6 @@ watcher.on('all', async (event, path) => {
   if (!config.folders) return;
   
   if (event === 'add' || event === 'unlink' || event === 'change') {
-    const extension = path.split('.').pop();
-    if (!extension) return;
-    if (!['mp4', 'mkv', 'avi', 'mov', 'flv', 'wmv', 'webm'].includes(extension)) return;
     for (const folder of config.folders) {
       if (!path.startsWith(folder.path)) continue;
       switch (folder.media_type) {
