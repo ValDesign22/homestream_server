@@ -51,7 +51,7 @@ if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 const watcher = watch(watchDir, { 
   ignored: /(^|[\/\\])\../,
   persistent: true,
-  ignoreInitial: true,
+  depth: 99,
 });
 
 watcher.on('all', (event, path) => {
