@@ -1,6 +1,8 @@
 import 'dotenv/config';
 
+import { watch } from 'chokidar';
 import express from 'express';
+import { existsSync } from 'fs';
 
 import { configHandler } from './routes/config.patch';
 import { detailsHandler } from './routes/details.get';
@@ -12,7 +14,6 @@ import { previewHandler } from './routes/preview.get';
 import { tracksHandler } from './routes/tracks.get';
 import { videoHandler } from './routes/video.get';
 import { collectionHandler } from './routes/collection.get';
-import { existsSync, watch } from 'fs';
 
 const app = express();
 
@@ -47,12 +48,14 @@ const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 
-const recursive = !(
-  process.platform === 'linux' && parseInt(process.versions.node.split('.')[0], 10) >= 18
-);
+const watcher = watch(watchDir, { 
+  ignored: /(^|[\/\\])\../,
+  persistent: true,
+  ignoreInitial: true,
+});
 
-watch(watchDir, { recursive }, (eventType, filename) => {
-  console.log(`File ${filename} has been ${eventType}`);
+watcher.on('all', (event, path) => {
+  console.log(event, path);
 });
 
 const port = process.env.PORT || 3000;
