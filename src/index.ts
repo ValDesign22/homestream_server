@@ -47,7 +47,11 @@ const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 
-watch(watchDir, { recursive: true }, (eventType, filename) => {
+const recursive = !(
+  process.platform === 'linux' && parseInt(process.versions.node.split('.')[0], 10) >= 18
+);
+
+watch(watchDir, { recursive }, (eventType, filename) => {
   console.log(`File ${filename} has been ${eventType}`);
 });
 
