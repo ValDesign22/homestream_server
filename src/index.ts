@@ -53,6 +53,7 @@ const watcher = watch(watchDir, {
   persistent: true,
   ignoreInitial: true,
   depth: 99,
+  usePolling: true,
 });
 
 watcher.on('all', (event, path) => {
