@@ -15,6 +15,11 @@ import { tracksHandler } from './routes/tracks.get';
 import { videoHandler } from './routes/video.get';
 import { collectionHandler } from './routes/collection.get';
 
+import { load_config } from './utils/config';
+import { EMediaType } from './utils/types';
+import { explore_movies_folder, explore_tvshows_folder } from './utils/explore';
+import { save_store } from './utils/store';
+
 const app = express();
 
 app.use(express.static('public'));
@@ -56,8 +61,25 @@ const watcher = watch(watchDir, {
   usePolling: true,
 });
 
-watcher.on('all', (event, path) => {
-  console.log(event, path);
+watcher.on('all', async (event, path) => {
+  const config = load_config();
+  if (!config.folders) return;
+  
+  for (const folder of config.folders) {
+    if (!path.startsWith(folder.path)) continue;
+    switch (folder.media_type) {
+      case EMediaType.Movies:
+        const movies = await explore_movies_folder(config, folder);
+        save_store(folder, movies);
+        break;
+      case EMediaType.TvShows:
+        const tvshows = await explore_tvshows_folder(config, folder);
+        save_store(folder, tvshows);
+        break;
+    }
+  }
+
+  console.log(`Event: ${event}, Path: ${path}`);
 });
 
 const port = process.env.PORT || 3000;
