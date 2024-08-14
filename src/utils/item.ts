@@ -70,6 +70,13 @@ const getCollectionById = (id: number): IMovie[] => {
   const stack: IMovie[] = [];
   const collection: IMovie[] = [];
 
+  for (const storeKey in stores) {
+    const store = stores[storeKey];
+    if (!store.length) continue;
+
+    stack.push(...store);
+  }
+
   while (stack.length) {
     const item = stack.pop();
     if (!item) continue;
