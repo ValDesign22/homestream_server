@@ -55,6 +55,7 @@ export interface ITvShowEpisode {
   overview: string,
   air_date: string,
   still_path: string | null,
+  runtime: number,
   path: string | null,
 }
 

@@ -193,6 +193,7 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
     overview: episode_response.overview,
     air_date: episode_response.air_date,
     still_path: still_path,
+    runtime: episode_response.runtime,
     path: null,
   };
 };
