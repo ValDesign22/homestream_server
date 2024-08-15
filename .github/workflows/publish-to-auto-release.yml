@@ -23,7 +23,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: update.tar.gz
-          path: dist
+          path: .
   release:
     name: Create Release
     needs: build
@@ -36,7 +36,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: update.tar.gz
-          path: dist
+          path: .
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -50,6 +50,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}
         run: |
-          gh release upload ${{ github.ref }} dist/update.tar.gz
+          gh release upload ${{ github.ref }} update.tar.gz
       - name: Notify on success
         run: echo "Release created at ${{ steps.create_release.outputs.upload_url }}"
