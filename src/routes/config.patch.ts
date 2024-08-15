@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
 import { IConfig } from '../utils/types';
-import { save_config } from '../utils/config';
+import { load_config, save_config } from '../utils/config';
 
-const configHandler = async (req: Request, res: Response) => {
+const configGetHandler = (req: Request, res: Response) => {
+  const config = load_config();
+  res.status(200).send(config);
+};
+
+const configPatchHandler = (req: Request, res: Response) => {
   const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
 
   if (!folders || !tmdb_language) {
@@ -18,4 +23,4 @@ const configHandler = async (req: Request, res: Response) => {
   }
 };
 
-export { configHandler };
+export { configGetHandler, configPatchHandler };

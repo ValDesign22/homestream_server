@@ -4,7 +4,7 @@ import { watch } from 'chokidar';
 import express from 'express';
 import { existsSync } from 'fs';
 
-import { configHandler } from './routes/config.patch';
+import { configGetHandler, configPatchHandler } from './routes/config.patch';
 import { detailsHandler } from './routes/details.get';
 import { extractHandler } from './routes/extract.get';
 import { foldersHandler } from './routes/folders.get';
@@ -17,9 +17,10 @@ import { collectionHandler } from './routes/collection.get';
 
 import { load_config } from './utils/config';
 import { EMediaType, IMovie } from './utils/types';
-import { explore_movies_folder, explore_tvshows_folder } from './utils/explore';
+import { explore_tvshows_folder } from './utils/explore';
 import { load_store, save_store } from './utils/store';
 import { search_movie } from './utils/tmdb';
+import { checkForUpdates } from './utils/updater';
 
 const app = express();
 
@@ -30,7 +31,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/collection', collectionHandler);
-app.patch('/config', configHandler);
+app.get('/config', configGetHandler);
+app.patch('/config', configPatchHandler);
 app.get('/details', detailsHandler);
 app.get('/extract', extractHandler);
 app.get('/folders', foldersHandler);
@@ -85,12 +87,10 @@ watcher.on('all', async (event, path) => {
 
           const newMovie = await search_movie(title, date, config);
 
-          if (newMovie) {
-            currentStore.push({
-              ...newMovie,
-              path,
-            });
-          }
+          if (newMovie) currentStore.push({
+            ...newMovie,
+            path,
+          });
 
           save_store(folder, currentStore);
           break;
@@ -120,6 +120,8 @@ watcher.on('all', async (event, path) => {
 
   console.log(`Event: ${event}, Path: ${path}`);
 });
+
+setInterval(checkForUpdates, 60000);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

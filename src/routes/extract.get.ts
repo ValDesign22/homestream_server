@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { getVideoItemById } from '../utils/item';
 import ffmpeg from 'fluent-ffmpeg';
 
-const extractHandler = async (req: Request, res: Response) => {
+const extractHandler = (req: Request, res: Response) => {
   const { id, extract_type, track_index } = req.query;
 
   if (!id || !extract_type || !track_index) return res.status(400).send('No id or extract_type provided');
@@ -16,7 +16,7 @@ const extractHandler = async (req: Request, res: Response) => {
   if (!videoPath) return res.status(404).send('Video has no path');
 
   try {
-    ffmpeg.ffprobe(videoPath, async (err, metadata) => {
+    ffmpeg.ffprobe(videoPath, (err, metadata) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Error extracting video metadata');

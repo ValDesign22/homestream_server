@@ -24,7 +24,7 @@ const getLastId = (root: IFolderItem): number => {
   return lastId;
 };
 
-const foldersHandler = async (req: Request, res: Response) => {
+const foldersHandler = (req: Request, res: Response) => {
   const FILES_FOLDER = process.env.FILES_FOLDER;
   if (!FILES_FOLDER) return res.status(500).send('Files folder not set');
 

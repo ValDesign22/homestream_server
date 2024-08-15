@@ -34,19 +34,15 @@ const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<
       const file_name = item.name.split('.').shift() as string;
       let date = null;
       const date_match = file_name.match(/\d{4}/);
-      if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) {
-        date = date_match[0];
-      }
+      if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
       const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
       const movie = await search_movie(title, date, config);
 
-      if (movie) {
-        movies.push({
-          ...movie,
-          path: `${current_path}/${item.name}`,
-        });
-      }
+      if (movie) movies.push({
+        ...movie,
+        path: `${current_path}/${item.name}`,
+      });
     }
   }
 
@@ -69,15 +65,11 @@ const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
 
-      if (item.isFile()) {
-        continue;
-      }
+      if (item.isFile()) continue;
 
       let date = null;
       const date_match = item.name.match(/\d{4}/);
-      if (date_match && date_match[0].length === 4 && date_match[0].length !== item.name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) {
-        date = date_match[0];
-      }
+      if (date_match && date_match[0].length === 4 && date_match[0].length !== item.name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
       const title = date ? item.name.split(' ').slice(0, -1).join(' ') : item.name;
 
       const tvshow = await search_tvshow(title, date, config);
@@ -180,12 +172,10 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
       if (!episode_number) continue;
 
       const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
-      if (episode) {
-        episodes.push({
-          ...episode,
-          path: `${current_path}/${item.name}`,
-        });
-      }
+      if (episode) episodes.push({
+        ...episode,
+        path: `${current_path}/${item.name}`,
+      });
     }
   }
 

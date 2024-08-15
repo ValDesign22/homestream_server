@@ -1,0 +1,36 @@
+name: "publish"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Archive Production Artifact
+        run: tar -czf update-v$(GITHUB_REF#refs/tags/).tar.gz .
+        shell: bash
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          body: "New release of ${{ github.ref }}"
+          files: update-v$(GITHUB_REF#refs/tags/).tar.gz
+      - name: Notify on success
+        run: echo "Release created at ${{ steps.create_release.outputs.upload_url }}"
