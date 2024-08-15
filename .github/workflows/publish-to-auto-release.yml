@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Archive Production Artifact
-        run: tar -czf update-v$(GITHUB_REF#refs/tags/).tar.gz .
+        run: tar -czf update-v$(GITHUB_REF#refs/tags/).tar.gz dist
         shell: bash
       - name: Create Release
         id: create_release
