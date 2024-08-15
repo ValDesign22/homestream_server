@@ -23,6 +23,8 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
       // // exec('pm2 restart all', (error, stdout, stderr) => {
 
       // // });
+
+      console.log('Update applied.');
     });
   } catch (error) {
     console.error('Failed to download update:', error);
@@ -31,7 +33,7 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
 
 const checkForUpdates = async () => {
   try {
-    const response = await axios.get('https://api.github.com/repos/username/repo/releases/latest');
+    const response = await axios.get(updaterUrl);
     const latestVersion = response.data.tag_name;
 
     if (latestVersion !== `v${version}`) {
