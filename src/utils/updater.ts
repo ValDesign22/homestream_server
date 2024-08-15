@@ -39,7 +39,7 @@ const checkForUpdates = async () => {
     if (latestVersion !== `v${version}`) {
       console.log(`Update available: ${latestVersion}. Downloading update...`);
 
-      const downloadUrl = response.data.assets.find((asset: any) => asset.name === `update-${latestVersion}.tar.gz`).browser_download_url;
+      const downloadUrl = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`).browser_download_url;
       await downloadAndApplyUpdate(downloadUrl);
     }
   } catch (error) {
