@@ -20,8 +20,10 @@ jobs:
       - name: Build
         run: npm run build
       - name: Archive Production Artifact
-        run: tar -czf update-v$(GITHUB_REF#refs/tags/).tar.gz dist
-        shell: bash
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-v$(GITHUB_REF#refs/tags/).tar.gz
+          path: dist
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
