@@ -16,9 +16,10 @@ import { videoHandler } from './routes/video.get';
 import { collectionHandler } from './routes/collection.get';
 
 import { load_config } from './utils/config';
-import { EMediaType } from './utils/types';
+import { EMediaType, IMovie } from './utils/types';
 import { explore_movies_folder, explore_tvshows_folder } from './utils/explore';
-import { save_store } from './utils/store';
+import { load_store, save_store } from './utils/store';
+import { search_movie } from './utils/tmdb';
 
 const app = express();
 
@@ -65,18 +66,54 @@ watcher.on('all', async (event, path) => {
   const config = load_config();
   if (!config.folders) return;
   
-  if (event === 'add' || event === 'unlink') {
+  if (event === 'add') {
     for (const folder of config.folders) {
       if (!path.startsWith(folder.path)) continue;
       switch (folder.media_type) {
         case EMediaType.Movies:
-          const movies = await explore_movies_folder(config, folder);
-          save_store(folder, movies);
+          const currentStore = load_store(folder) as IMovie[];
+          if (currentStore.find((movie) => movie.path === path)) return;
+
+          const file = path.split('/').pop() as string;
+          const file_name = file.split('.').slice(0, -1).join('.');
+          let date = null;
+          const date_match = file_name.match(/\d{4}/);
+          if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) {
+            date = date_match[0];
+          }
+          const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
+
+          const newMovie = await search_movie(title, date, config);
+
+          if (newMovie) {
+            currentStore.push({
+              ...newMovie,
+              path,
+            });
+          }
+
+          save_store(folder, currentStore);
           break;
         case EMediaType.TvShows:
           const tvshows = await explore_tvshows_folder(config, folder);
           save_store(folder, tvshows);
           break;
+      }
+    }
+  }
+  if (event === 'unlink') {
+    for (const folder of config.folders) {
+      if (!path.startsWith(folder.path)) continue;
+      switch (folder.media_type) {
+        case EMediaType.Movies:
+          const currentStore = load_store(folder) as IMovie[];
+          const newStore = currentStore.filter((movie) => movie.path !== path);
+          save_store(folder, newStore);
+          break;
+        case EMediaType.TvShows:
+          const tvshows = await explore_tvshows_folder(config, folder);
+          save_store(folder, tvshows);
+          break
       }
     }
   }
