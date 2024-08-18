@@ -5,21 +5,21 @@ import { getVideoItemById } from '../utils/item';
 const videoHandler = (req: Request, res: Response) => {
   const idQuery = req.query.id;
 
-  if (!idQuery) return res.status(400).send('No video id provided');
+  if (!idQuery) return res.status(400).json({ message: 'Missing required field: id' });
 
   const videoItem = getVideoItemById(parseInt(idQuery as string, 10));
-  if (!videoItem) return res.status(404).send('Video not found');
+  if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
   const videoPath = videoItem.path;
-  if (!videoPath) return res.status(404).send('Video has no path');
+  if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
   try {
     const stat = statSync(videoPath);
 
-    if (!stat.isFile()) return res.status(404).send('Video not found');
+    if (!stat.isFile()) return res.status(404).json({ message: 'Video not found' });
 
     const range = req.headers.range;
-    if (!range) return res.status(400).send('Range header is required');
+    if (!range) return res.status(400).json({ message: 'Range header is required' });
 
     const positions = range.replace(/bytes=/, '').split('-');
     const start = parseInt(positions[0], 10);
@@ -49,7 +49,7 @@ const videoHandler = (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal server error');
+    res.status(500).json({ message: 'Internal server error', error });
   }
 };
 

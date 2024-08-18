@@ -1,26 +1,22 @@
 import { Request, Response } from 'express';
 import { IConfig } from '../utils/types';
-import { load_config, save_config } from '../utils/config';
-
-const configGetHandler = (req: Request, res: Response) => {
-  const config = load_config();
-  res.status(200).send(config);
-};
+import { save_config } from '../utils/config';
 
 const configPatchHandler = (req: Request, res: Response) => {
   const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
 
   if (!folders || !tmdb_language) {
-    return res.status(400).send('Missing required fields');
+    const missingFields = ['folders', 'tmdb_language'].filter(field => !req.body[field]);
+    return res.status(400).json({ message: `Missing required fields: ${missingFields.join(', ')}` });
   }
 
   try {
     save_config({ folders, tmdb_language });
-    res.status(200).send('Config updated successfully');
+    res.status(200).json({ message: 'Config updated successfully'});
   } catch (error) {
     console.error(error);
-    res.status(500).send('Failed to update config');
+    res.status(500).json({ message: 'Failed to update config', error });
   }
 };
 
-export { configGetHandler, configPatchHandler };
+export { configPatchHandler };

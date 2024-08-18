@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
-import { getCollectionById } from "../utils/item";
+import { Request, Response } from 'express';
+import { getCollectionById } from '../utils/item';
 
 const collectionHandler = (req: Request, res: Response) => {
   const collectionId = req.query.id;
 
-  if (!collectionId) return res.status(400).send("No collection id provided");
+  if (!collectionId) return res.status(400).json({ message: 'Missing required field: id' });
 
   let collection = getCollectionById(parseInt(collectionId as string, 10));
 

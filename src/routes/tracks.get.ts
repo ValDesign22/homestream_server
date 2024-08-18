@@ -5,19 +5,19 @@ import { getVideoItemById } from '../utils/item';
 const tracksHandler = (req: Request, res: Response) => {
   const { id } = req.query;
 
-  if (!id) return res.status(400).send('No id provided');
+  if (!id) return res.status(400).json({ message: 'Missing required field: id' });
 
   const videoItem = getVideoItemById(parseInt(id as string, 10));
-  if (!videoItem) return res.status(404).send('Video not found');
+  if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
   const videoPath = videoItem.path;
-  if (!videoPath) return res.status(404).send('Video has no path');
+  if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
   try {
-    ffmpeg.ffprobe(videoPath, (err, metadata) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Error extracting video metadata');
+    ffmpeg.ffprobe(videoPath, (error, metadata) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Error extracting video metadata', error });
       }
 
       const tracks = metadata.streams.map((stream) => {
@@ -42,7 +42,7 @@ const tracksHandler = (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal server error');
+    res.status(500).json({ message: 'Internal server error', error });
   }
 };
 

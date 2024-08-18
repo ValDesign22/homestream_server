@@ -44,8 +44,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
-          body: "New release of ${{ github.ref }}"
+          name: Release ${{ github.ref_name }}
+          body: "New release of ${{ github.ref_name }}"
+          draft: true
       - name: Upload archive to release
         env:
           GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}

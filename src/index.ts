@@ -4,16 +4,20 @@ import { watch } from 'chokidar';
 import express from 'express';
 import { existsSync } from 'fs';
 
-import { configGetHandler, configPatchHandler } from './routes/config.patch';
+import { collectionHandler } from './routes/collection.get';
+import { configGetHandler } from './routes/config.get';
+import { configPatchHandler } from './routes/config.patch';
 import { detailsHandler } from './routes/details.get';
 import { extractHandler } from './routes/extract.get';
 import { foldersHandler } from './routes/folders.get';
+import { previewHandler } from './routes/preview.get';
+import { profilesDelete } from './routes/profiles.delete';
+import { profilesGet } from './routes/profiles.get';
+import { profilesPost } from './routes/profiles.post';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
-import { previewHandler } from './routes/preview.get';
 import { tracksHandler } from './routes/tracks.get';
 import { videoHandler } from './routes/video.get';
-import { collectionHandler } from './routes/collection.get';
 
 import { load_config } from './utils/config';
 import { EMediaType, IMovie } from './utils/types';
@@ -35,10 +39,13 @@ app.get('/config', configGetHandler);
 app.patch('/config', configPatchHandler);
 app.get('/details', detailsHandler);
 app.get('/extract', extractHandler);
-app.get('/folders', foldersHandler);
-app.get('/setup', setupHandler);
-app.get('/stores', storesHandler);
+app.get('/folders', foldersHandler);;
 app.get('/preview', previewHandler);
+app.delete('/profiles', profilesDelete);
+app.get('/profiles', profilesGet);
+app.post('/profiles', profilesPost);
+app.get('/setup', setupHandler);
+app.get('/stores', storesHandler)
 app.get('/tracks', tracksHandler);
 app.get('/video', videoHandler);
 
@@ -67,6 +74,8 @@ const watcher = watch(watchDir, {
 watcher.on('all', async (event, path) => {
   const config = load_config();
   if (!config.folders) return;
+
+  if (!['avi', 'mkv', 'mp4', 'webm', 'wmv'].includes(path.split('.').pop() as string)) return;
   
   if (event === 'add') {
     for (const folder of config.folders) {

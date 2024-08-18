@@ -3,6 +3,8 @@ import { load_store } from './store';
 import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
 import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb';
 
+const videoExtensions = ['avi', 'mkv', 'mp4', 'webm', 'wmv'];
+
 const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<IMovie[]> => {
   const stack = [folder.path];
 
@@ -24,6 +26,8 @@ const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<
         stack.push(`${current_path}/${item.name}`);
         continue;
       }
+
+      if (!videoExtensions.includes(item.name.split('.').pop() as string)) continue;
 
       const existing_movie = existing_movies.find((movie) => movie.path === current_path);
       if (existing_movie) {
@@ -145,6 +149,8 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
         stack.push(`${current_path}/${item.name}`);
         continue;
       }
+
+      if (!videoExtensions.includes(item.name.split('.').pop() as string)) continue;
 
       const existing_tvshow = existing_tvshows.find((t) => t.path === tvshow.path);
       if (existing_tvshow) {

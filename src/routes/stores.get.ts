@@ -10,7 +10,7 @@ const storesHandler = (req: Request, res: Response) => {
 
   for (const folder of config.folders) stores[folder.name] = load_store(folder);
 
-  res.status(200).send(stores);
+  res.status(200).json(stores);
 };
 
 export { storesHandler };

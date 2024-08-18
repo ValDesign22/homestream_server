@@ -26,7 +26,7 @@ const getLastId = (root: IFolderItem): number => {
 
 const foldersHandler = (req: Request, res: Response) => {
   const FILES_FOLDER = process.env.FILES_FOLDER;
-  if (!FILES_FOLDER) return res.status(500).send('Files folder not set');
+  if (!FILES_FOLDER) return res.status(500).json({ message: 'Files folder not set' });
 
   const stack: IFolderItem[] = [{
     id: 0,

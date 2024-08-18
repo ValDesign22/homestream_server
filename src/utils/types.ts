@@ -74,3 +74,27 @@ export enum EMediaType {
   Movies,
   TvShows,
 }
+
+export interface IProfile {
+  id: number,
+  name: string,
+  password?: string,
+  role: ERole,
+  history: IHistory[],
+  watchlist: (IMovie | ITvShow)[],
+  favorites: (IMovie | ITvShow)[],
+}
+
+export enum ERole {
+  Admin,
+  User,
+}
+
+export interface IHistory {
+  id: number,
+  date: string,
+  title: string,
+  media_type: EMediaType,
+  watched: boolean,
+  progress: number,
+}

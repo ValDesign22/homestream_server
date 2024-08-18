@@ -20,7 +20,7 @@ const setupHandler = async (req: Request, res: Response) => {
     }
   }
 
-  res.status(200).send('Setup completed');
+  res.status(200).json({ message: 'Setup completed successfully' });
 };
 
 export { setupHandler };
