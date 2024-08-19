@@ -13,16 +13,30 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
     writer.on('finish', async () => {
       console.log('Update downloaded. Extracting...');
 
-      // await extract({
-      //   file: 'update.tar.gz',
-      //   cwd: __dirname,
-      // });
+      await extract({
+        file: 'update.tar.gz',
+        cwd: process.cwd(),
+      });
 
-      // console.log('Update extracted. Restarting server...');
+      console.log('Update extracted. Installing dependencies...');
 
-      // // exec('pm2 restart all', (error, stdout, stderr) => {
+      exec('npm install', (error, stdout, stderr) => {
+        if (error) {
+          console.error('Failed to install dependencies:', error);
+          return;
+        }
 
-      // // });
+        console.log('Dependencies installed. Restarting server...');
+
+        exec('pm2 restart all', (error, stdout, stderr) => {
+          if (error) {
+            console.error('Failed to restart server:', error);
+            return;
+          }
+
+          console.log('Server restarted.');
+        });
+      });
 
       console.log('Update applied.');
     });
@@ -39,8 +53,8 @@ const checkForUpdates = async () => {
     if (latestVersion !== `v${version}`) {
       console.log(`Update available: ${latestVersion}. Downloading update...`);
 
-      // const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`)
-      // if (asset) await downloadAndApplyUpdate(asset.browser_download_url);
+      const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`);
+      if (asset) await downloadAndApplyUpdate(asset.browser_download_url);
     }
   } catch (error) {
     console.error('Failed to check for updates:', error);
