@@ -13,6 +13,7 @@ import { foldersHandler } from './routes/folders.get';
 import { previewHandler } from './routes/preview.get';
 import { profilesDelete } from './routes/profiles.delete';
 import { profilesGet } from './routes/profiles.get';
+import { profilesPatch } from './routes/profiles.patch';
 import { profilesPost } from './routes/profiles.post';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
@@ -43,6 +44,7 @@ app.get('/folders', foldersHandler);;
 app.get('/preview', previewHandler);
 app.delete('/profiles', profilesDelete);
 app.get('/profiles', profilesGet);
+app.patch('/profiles', profilesPatch);
 app.post('/profiles', profilesPost);
 app.get('/setup', setupHandler);
 app.get('/stores', storesHandler)
