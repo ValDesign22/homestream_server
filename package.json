@@ -1,6 +1,6 @@
 {
   "name": "homestream_server",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "HomeStream server for streaming media",
   "main": "dist/src/index.js",
   "updaterUrl": "https://api.github.com/repos/ValDesign22/homestream_server/releases/latest",

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { getProfiles, saveProfiles } from '../utils/profiles';
 
 const profilesPatch = (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.query.id as string | undefined;
   if (!id) return res.status(400).json({ message: 'Missing required field: id' });
   if (isNaN(parseInt(id))) return res.status(400).json({ message: 'Invalid id' });
 
