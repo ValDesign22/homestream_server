@@ -39,8 +39,8 @@ const checkForUpdates = async () => {
     if (latestVersion !== `v${version}`) {
       console.log(`Update available: ${latestVersion}. Downloading update...`);
 
-      const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`)
-      if (asset) await downloadAndApplyUpdate(asset.browser_download_url);
+      // const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`)
+      // if (asset) await downloadAndApplyUpdate(asset.browser_download_url);
     }
   } catch (error) {
     console.error('Failed to check for updates:', error);

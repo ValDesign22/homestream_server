@@ -132,7 +132,7 @@ watcher.on('all', async (event, path) => {
   console.log(`Event: ${event}, Path: ${path}`);
 });
 
-// setInterval(checkForUpdates, 60000);
+setInterval(checkForUpdates, 10000);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
