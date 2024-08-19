@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import { watch } from 'chokidar';
+import cors from 'cors';
 import express from 'express';
 import { existsSync } from 'fs';
 
@@ -29,6 +30,7 @@ import { checkForUpdates } from './utils/updater';
 
 const app = express();
 
+app.use(cors());
 app.use(express.static('public'));
 app.use(express.static('assets'));
 app.use(express.static('views'));
