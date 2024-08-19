@@ -91,9 +91,7 @@ watcher.on('all', async (event, path) => {
           const file_name = file.split('.').slice(0, -1).join('.');
           let date = null;
           const date_match = file_name.match(/\d{4}/);
-          if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) {
-            date = date_match[0];
-          }
+          if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
           const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
           const newMovie = await search_movie(title, date, config);
@@ -110,6 +108,8 @@ watcher.on('all', async (event, path) => {
           save_store(folder, tvshows);
           break;
       }
+      const media_type = folder.media_type === EMediaType.Movies ? 'Movie' : 'TvShow';
+      console.log(`${media_type} added:`, path);
     }
   }
   if (event === 'unlink') {
@@ -126,10 +126,10 @@ watcher.on('all', async (event, path) => {
           save_store(folder, tvshows);
           break
       }
+      const media_type = folder.media_type === EMediaType.Movies ? 'Movie' : 'TvShow';
+      console.log(`${media_type} removed:`, path);
     }
   }
-
-  console.log(`Event: ${event}, Path: ${path}`);
 });
 
 setInterval(checkForUpdates, 3600000);

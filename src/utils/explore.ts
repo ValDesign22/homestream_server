@@ -100,9 +100,7 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
     const current_path = stack.pop();
     if (!current_path) continue;
 
-    const items = readdirSync(current_path, {
-      withFileTypes: true,
-    });
+    const items = readdirSync(current_path, { withFileTypes: true });
 
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
@@ -138,9 +136,7 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
     const current_path = stack.pop();
     if (!current_path) continue;
 
-    const items = readdirSync(current_path, {
-      withFileTypes: true,
-    });
+    const items = readdirSync(current_path, { withFileTypes: true });
 
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;

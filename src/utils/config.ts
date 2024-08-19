@@ -7,9 +7,7 @@ const load_config = (): IConfig => {
 
   const config_path = `${APP_STORAGE_PATH}/config.json`;
 
-  if (!existsSync(config_path)) {
-    writeFileSync(config_path, JSON.stringify({ folders: [], tmdb_language: 'en-US' }, null, 2));
-  }
+  if (!existsSync(config_path)) writeFileSync(config_path, JSON.stringify({ folders: [], tmdb_language: 'en-US' }, null, 2));
   const config = readFileSync(config_path, 'utf-8');
   return JSON.parse(config);
 };
