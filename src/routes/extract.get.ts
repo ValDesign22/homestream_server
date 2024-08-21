@@ -33,6 +33,8 @@ const extractHandler = (req: Request, res: Response) => {
       if (isNaN(trackIndex) || trackIndex < 0 || trackIndex >= extract_data.length) return res.status(400).json({ message: 'Invalid track_index' });
 
       const track = extract_data[trackIndex];
+      console.log(`Extracting ${extract_type} track ${trackIndex}: ${track.index} - ${track.codec_name}`);
+      console.log(track);
 
       if (extract_type === 'audio') {
         res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
@@ -41,7 +43,7 @@ const extractHandler = (req: Request, res: Response) => {
           .outputFormat('mp3')
           .audioCodec('libmp3lame')
           .audioBitrate(128)
-          .outputOptions([`-map 0:a:${track.index}`])
+          .outputOptions([`-map 0:a:${trackIndex}`])
           .on('error', (error) => {
             console.error(error);
             res.status(500).json({ message: 'Error extracting audio', error });
@@ -54,7 +56,7 @@ const extractHandler = (req: Request, res: Response) => {
 
         ffmpeg(videoPath)
           .outputFormat('webvtt')
-          .outputOptions([`-map 0:s:${track.index}`, `-c:s webvtt`])
+          .outputOptions([`-map 0:s:${trackIndex}`, `-c:s webvtt`])
           .on('error', (error) => {
             console.error(error);
             res.status(500).json({ message: 'Error extracting subtitle', error });
