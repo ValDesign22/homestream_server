@@ -45,8 +45,7 @@ const extractHandler = (req: Request, res: Response) => {
           .audioBitrate(128)
           .outputOptions([`-map 0:a:${trackIndex}?`])
           .on('error', (error) => {
-            console.error(error);
-            res.status(500).json({ message: 'Error extracting audio', error });
+            if (!res.headersSent) res.status(500).json({ message: 'Error extracting audio', error });
           })
           .pipe(res, { end: true });
       } else if (extract_type === 'subtitle') {
@@ -58,8 +57,7 @@ const extractHandler = (req: Request, res: Response) => {
           .outputFormat('webvtt')
           .outputOptions([`-map 0:s:${trackIndex}?`, `-c:s webvtt`])
           .on('error', (error) => {
-            console.error(error);
-            res.status(500).json({ message: 'Error extracting subtitle', error });
+            if (!res.headersSent) res.status(500).json({ message: 'Error extracting subtitle', error });
           })
           .pipe(res, { end: true });
       }
