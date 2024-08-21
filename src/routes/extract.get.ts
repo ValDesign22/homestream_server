@@ -25,15 +25,15 @@ const extractHandler = (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Error extracting video metadata', error });
       }
 
-      const extract_data = metadata.streams.find((stream) => stream.codec_type === extract_type);
+      const extract_data = metadata.streams.filter((stream) => stream.codec_type === extract_type);
 
       if (!extract_data || extract_data.length === 0) return res.status(404).json({ message: 'No extract data found' });
 
       const trackIndex = parseInt(track_index as string, 10);
       if (isNaN(trackIndex) || trackIndex < 0 || trackIndex >= extract_data.length) return res.status(400).json({ message: 'Invalid track_index' });
 
-      const track = extract_data[trackIndex];
-      console.log(`Extracting ${extract_type} track ${trackIndex}: ${track.index} - ${track.codec_name}`);
+      const track = extract_data.find((stream) => stream.index === trackIndex);
+      if (!track) return res.status(404).json({ message: 'Track not found' });
       console.log(track);
 
       if (extract_type === 'audio') {
