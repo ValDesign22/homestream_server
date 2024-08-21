@@ -43,7 +43,7 @@ const extractHandler = (req: Request, res: Response) => {
           .outputFormat('mp3')
           .audioCodec('libmp3lame')
           .audioBitrate(128)
-          .outputOptions([`-map 0:a:${trackIndex}`])
+          .outputOptions([`-map 0:a:${trackIndex}?`])
           .on('error', (error) => {
             console.error(error);
             res.status(500).json({ message: 'Error extracting audio', error });
@@ -56,7 +56,7 @@ const extractHandler = (req: Request, res: Response) => {
 
         ffmpeg(videoPath)
           .outputFormat('webvtt')
-          .outputOptions([`-map 0:s:${trackIndex}`, `-c:s webvtt`])
+          .outputOptions([`-map 0:s:${trackIndex}?`, `-c:s webvtt`])
           .on('error', (error) => {
             console.error(error);
             res.status(500).json({ message: 'Error extracting subtitle', error });
