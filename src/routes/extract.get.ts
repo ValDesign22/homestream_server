@@ -37,8 +37,6 @@ const extractHandler = (req: Request, res: Response) => {
       console.log(track);
 
       if (extract_type === 'audio') {
-        res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
-
         ffmpeg(videoPath)
           .outputFormat('mp3')
           .audioCodec('libmp3lame')
@@ -47,19 +45,15 @@ const extractHandler = (req: Request, res: Response) => {
           .on('error', (error) => {
             if (!res.headersSent) res.status(500).json({ message: 'Error extracting audio', error });
           })
-          .pipe(res, { end: true });
+          .pipe(res.writeHead(200, { 'Content-Type': 'audio/mpeg' }), { end: true });
       } else if (extract_type === 'subtitle') {
-        res.writeHead(200, {
-          'Content-Type': 'text/vtt',
-        });
-
         ffmpeg(videoPath)
           .outputFormat('webvtt')
           .outputOptions([`-map 0:s:${trackIndex}?`, `-c:s webvtt`])
           .on('error', (error) => {
             if (!res.headersSent) res.status(500).json({ message: 'Error extracting subtitle', error });
           })
-          .pipe(res, { end: true });
+          .pipe(res.writeHead(200, { 'Content-Type': 'text/vtt' }), { end: true });
       }
     });
   } catch (error) {
