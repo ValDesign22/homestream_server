@@ -30,7 +30,7 @@ const extractHandler = (req: Request, res: Response) => {
       if (!extract_data || extract_data.length === 0) return res.status(404).json({ message: 'No extract data found' });
 
       const trackIndex = parseInt(track_index as string, 10);
-      if (isNaN(trackIndex) || trackIndex < 0 || trackIndex >= extract_data.length) return res.status(400).json({ message: 'Invalid track_index' });
+      if (isNaN(trackIndex) || trackIndex < 0) return res.status(400).json({ message: 'Invalid track_index' });
 
       const track = extract_data.find((stream) => stream.index === trackIndex);
       if (!track) return res.status(404).json({ message: 'Track not found' });
