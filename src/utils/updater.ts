@@ -20,7 +20,7 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
 
       console.log('Update extracted. Installing dependencies...');
 
-      exec('npm install', (error, stdout, stderr) => {
+      exec(`cd ${process.cwd()} && npm install`, (error, stdout, stderr) => {
         if (error) {
           console.error('Failed to install dependencies:', error);
           return;
@@ -45,7 +45,7 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
   }
 };
 
-const checkForUpdates = async () => {
+const checkForUpdates = async (): Promise<boolean | void> => {
   try {
     const response = await axios.get(updaterUrl);
     const latestVersion = response.data.tag_name;
@@ -55,7 +55,8 @@ const checkForUpdates = async () => {
 
       const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`);
       if (asset) await downloadAndApplyUpdate(asset.browser_download_url);
-    }
+      return true;
+    } else return false;
   } catch (error) {
     console.error('Failed to check for updates:', error);
   }

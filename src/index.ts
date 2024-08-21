@@ -19,6 +19,7 @@ import { profilesPost } from './routes/profiles.post';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
 import { tracksHandler } from './routes/tracks.get';
+import { updateHandler } from './routes/update.post';
 import { videoHandler } from './routes/video.get';
 
 import { load_config } from './utils/config';
@@ -42,15 +43,16 @@ app.get('/config', configGetHandler);
 app.patch('/config', configPatchHandler);
 app.get('/details', detailsHandler);
 app.get('/extract', extractHandler);
-app.get('/folders', foldersHandler);;
+app.get('/folders', foldersHandler);
 app.get('/preview', previewHandler);
 app.delete('/profiles', profilesDelete);
 app.get('/profiles', profilesGet);
 app.patch('/profiles', profilesPatch);
 app.post('/profiles', profilesPost);
 app.get('/setup', setupHandler);
-app.get('/stores', storesHandler)
+app.get('/stores', storesHandler);
 app.get('/tracks', tracksHandler);
+app.post('/update', updateHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {
@@ -58,7 +60,7 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.path} - ${res.statusCode}`);
     console.log('Headers:', res.getHeaders());
     console.log('Body:', req.body);
-  });  
+  });
 
   next();
 });
@@ -67,7 +69,7 @@ const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 
-const watcher = watch(watchDir, { 
+const watcher = watch(watchDir, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
   ignoreInitial: true,
@@ -80,7 +82,7 @@ watcher.on('all', async (event, path) => {
   if (!config.folders) return;
 
   if (!['avi', 'mkv', 'mp4', 'webm', 'wmv'].includes(path.split('.').pop() as string)) return;
-  
+
   if (event === 'add') {
     for (const folder of config.folders) {
       if (!path.startsWith(folder.path)) continue;
