@@ -51,6 +51,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: "New release of ${{ github.ref_name }}"
           draft: true
-          files: dist/*
+          files: ./*
       - name: Notify on success
         run: echo "Release created at ${{ steps.create_release.outputs.upload_url }}"
