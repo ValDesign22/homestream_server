@@ -19,7 +19,8 @@ import { profilesPost } from './routes/profiles.post';
 import { setupHandler } from './routes/setup.get';
 import { storesHandler } from './routes/stores.get';
 import { tracksHandler } from './routes/tracks.get';
-import { updateHandler } from './routes/update.post';
+import { updateGetHandler } from './routes/update.get';
+import { updatePostHandler } from './routes/update.post';
 import { videoHandler } from './routes/video.get';
 
 import { load_config } from './utils/config';
@@ -27,7 +28,7 @@ import { EMediaType, IMovie } from './utils/types';
 import { explore_tvshows_folder } from './utils/explore';
 import { load_store, save_store } from './utils/store';
 import { search_movie } from './utils/tmdb';
-import { checkForUpdates } from './utils/updater';
+import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 
 const app = express();
 
@@ -52,7 +53,8 @@ app.post('/profiles', profilesPost);
 app.get('/setup', setupHandler);
 app.get('/stores', storesHandler);
 app.get('/tracks', tracksHandler);
-app.post('/update', updateHandler);
+app.get('/update', updateGetHandler);
+app.post('/update', updatePostHandler);
 app.get('/video', videoHandler);
 
 app.use((req, res, next) => {
@@ -136,7 +138,10 @@ watcher.on('all', async (event, path) => {
   }
 });
 
-setInterval(checkForUpdates, 3600000);
+setInterval(async () => {
+  const updater = await checkForUpdates();
+  if (updater.updateAvailable && updater.downloadUrl) await downloadAndApplyUpdate(updater.downloadUrl);
+}, 3600000);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

@@ -51,10 +51,6 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: "New release of ${{ github.ref_name }}"
           draft: true
-      - name: Upload archive to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}
-        run: |
-          gh release upload ${{ github.ref }} update.tar.gz
+          files: dist/*
       - name: Notify on success
         run: echo "Release created at ${{ steps.create_release.outputs.upload_url }}"
