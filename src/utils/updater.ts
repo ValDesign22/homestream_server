@@ -2,44 +2,56 @@ import axios from 'axios';
 import { updaterUrl, version } from '../../package.json';
 import { createWriteStream } from 'fs';
 import { extract } from 'tar';
-import { exec } from 'child_process';
+import { exec as execCallback } from 'child_process';
+import { promisify } from 'util';
+
+const exec = promisify(execCallback);
+
+const downloadFile = (url: string, destination: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const writer = createWriteStream(destination);
+    axios.get(url, { responseType: 'stream' })
+      .then(response => response.data.pipe(writer))
+      .catch(reject);
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+  });
+}
+
+const compareVersion = (current: string, latest: string): boolean => {
+  const currentParts = current.split('.').map(Number);
+  const latestParts = latest.split('.').map(Number);
+
+  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+    const currentPart = currentParts[i] || 0;
+    const latestPart = latestParts[i] || 0;
+
+    if (currentPart < latestPart) return true;
+    if (currentPart > latestPart) return false;
+  }
+
+  return false;
+}
 
 const downloadAndApplyUpdate = async (downloadUrl: string) => {
   try {
-    const writer = createWriteStream('update.tar.gz');
-    const response = await axios.get(downloadUrl, { responseType: 'stream' });
-    response.data.pipe(writer);
+    console.log('Downloading update...');
+    await downloadFile(downloadUrl, 'update.tar.gz');
+    console.log('Update downloaded. Extracting...');
 
-    writer.on('finish', async () => {
-      console.log('Update downloaded. Extracting...');
-
-      await extract({
-        file: 'update.tar.gz',
-        cwd: process.cwd(),
-      });
-
-      console.log('Update extracted. Installing dependencies...');
-
-      exec(`cd ${process.cwd()} && npm install`, (error, stdout, stderr) => {
-        if (error) {
-          console.error('Failed to install dependencies:', error);
-          return;
-        }
-
-        console.log('Dependencies installed. Restarting server...');
-
-        exec('pm2 restart all', (error, stdout, stderr) => {
-          if (error) {
-            console.error('Failed to restart server:', error);
-            return;
-          }
-
-          console.log('Server restarted.');
-        });
-      });
-
-      console.log('Update applied.');
+    await extract({
+      file: 'update.tar.gz',
+      cwd: process.cwd(),
     });
+
+    console.log('Update extracted. Installing dependencies...');
+
+    await exec(`cd ${process.cwd()} && npm install`);
+    console.log('Dependencies installed. Restarting server...');
+
+    await exec('pm2 restart all');
+    console.log('Server restarted.');
+    console.log('Update applied.');
   } catch (error) {
     console.error('Failed to download update:', error);
   }
@@ -48,11 +60,9 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
 const checkForUpdates = async (): Promise<{ updateAvailable: boolean, latestVersion: string, downloadUrl?: string }> => {
   try {
     const response = await axios.get(updaterUrl);
-    const latestVersion = response.data.tag_name;
+    const latestVersion = response.data.tag_name.slice(1);
 
-    if (latestVersion !== `v${version}`) {
-      console.log(`Update available: ${latestVersion}. Downloading update...`);
-
+    if (compareVersion(version, latestVersion)) {
       const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`);
       return { updateAvailable: true, latestVersion, downloadUrl: asset.browser_download_url };
     } else return { updateAvailable: false, latestVersion };

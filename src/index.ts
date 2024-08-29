@@ -27,7 +27,7 @@ import { load_config } from './utils/config';
 import { EMediaType, IMovie } from './utils/types';
 import { explore_tvshows_folder } from './utils/explore';
 import { load_store, save_store } from './utils/store';
-import { search_movie } from './utils/tmdb';
+import { search_movie, search_tvshow_episode } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 
 const app = express();
@@ -111,6 +111,38 @@ watcher.on('all', async (event, path) => {
           break;
         case EMediaType.TvShows:
           const tvshows = await explore_tvshows_folder(config, folder);
+
+          for (const tvshow of tvshows) {
+            if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
+            for (const season of tvshow.seasons) {
+              if (!season.path || !path.startsWith(season.path)) continue;
+              const existing_episode = season.episodes.find((episode) => episode.path === path);
+              if (existing_episode) return;
+
+              const file = path.split('/').pop() as string;
+              const file_name = file.split('.').slice(0, -1).join('.');
+
+              const episode_number = (() => {
+                const firstSplit = file_name.split('.').shift();
+                if (!firstSplit) return null;
+                const lastWord = firstSplit.trim().split(/\s+/).pop();
+                if (!lastWord) return null;
+                const epidosePart = lastWord.replace('E', '');
+                if (!epidosePart) return null;
+                if ([...epidosePart].every((char) => !isNaN(parseInt(char)))) return parseInt(epidosePart);
+                return null;
+              })();
+
+              if (!episode_number) continue;
+
+              const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
+              if (episode) season.episodes.push({
+                ...episode,
+                path,
+              });
+            }
+          }
+
           save_store(folder, tvshows);
           break;
       }
@@ -129,6 +161,16 @@ watcher.on('all', async (event, path) => {
           break;
         case EMediaType.TvShows:
           const tvshows = await explore_tvshows_folder(config, folder);
+
+          for (const tvshow of tvshows) {
+            if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
+            for (const season of tvshow.seasons) {
+              if (!season.path || !path.startsWith(season.path)) continue;
+              const newEpisodes = season.episodes.filter((episode) => episode.path !== path);
+              season.episodes = newEpisodes;
+            }
+          }
+
           save_store(folder, tvshows);
           break
       }
