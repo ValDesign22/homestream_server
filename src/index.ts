@@ -4,6 +4,7 @@ import { watch } from 'chokidar';
 import cors from 'cors';
 import express from 'express';
 import { existsSync } from 'fs';
+import { Server } from 'ws';
 
 import { collectionHandler } from './routes/collection.get';
 import { configGetHandler } from './routes/config.get';
@@ -24,13 +25,16 @@ import { updatePostHandler } from './routes/update.post';
 import { videoHandler } from './routes/video.get';
 
 import { load_config } from './utils/config';
-import { EMediaType, IMovie } from './utils/types';
+import { EMediaType, ENotificationType, IMovie, ITvShow } from './utils/types';
 import { explore_tvshows_folder } from './utils/explore';
 import { load_store, save_store } from './utils/store';
 import { search_movie, search_tvshow_episode } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
+import { getProfiles } from './utils/profiles';
 
 const app = express();
+
+const wss = new Server({ port: 8080 });
 
 app.use(cors());
 app.use(express.static('public'));
@@ -71,6 +75,35 @@ const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 
+const sendNotification = async (data: IMovie | ITvShow) => {
+  const profiles = getProfiles();
+  if (!profiles || !profiles.length) return;
+  const media_type = data.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
+
+  for (const profile of profiles) {
+    if (profile.favorites.find((favorite) => favorite.id === data.id)) {
+      return wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
+          profile_id: profile.id,
+          media_type,
+          notification_type: ENotificationType.Favorites,
+          data,
+        }));
+      });
+    };
+    if (profile.watchlist.find((watchlist) => watchlist.id === data.id)) {
+      return wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
+          profile_id: profile.id,
+          media_type,
+          notification_type: ENotificationType.Watchlist,
+          data,
+        }));
+      });
+    };
+  }
+};
+
 const watcher = watch(watchDir, {
   ignored: /(^|[\/\\])\../,
   persistent: true,
@@ -102,10 +135,14 @@ watcher.on('all', async (event, path) => {
 
           const newMovie = await search_movie(title, date, config);
 
-          if (newMovie) currentStore.push({
-            ...newMovie,
-            path,
-          });
+          if (newMovie) {
+            currentStore.push({
+              ...newMovie,
+              path,
+            });
+
+            sendNotification(newMovie);
+          }
 
           save_store(folder, currentStore);
           break;
@@ -136,10 +173,14 @@ watcher.on('all', async (event, path) => {
               if (!episode_number) continue;
 
               const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
-              if (episode) season.episodes.push({
-                ...episode,
-                path,
-              });
+              if (episode) {
+                season.episodes.push({
+                  ...episode,
+                  path,
+                });
+
+                sendNotification(tvshow);
+              }
             }
           }
 

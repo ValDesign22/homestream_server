@@ -98,3 +98,15 @@ export interface IHistory {
   watched: boolean,
   progress: number,
 }
+
+export interface INotification {
+  profile_id: number,
+  media_type: EMediaType,
+  notification_type: ENotificationType,
+  data: IMovie | ITvShow,
+}
+
+export enum ENotificationType {
+  Watchlist,
+  Favorites,
+}
