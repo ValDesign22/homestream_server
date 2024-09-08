@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { getVideoItemById, searchItemById } from '../utils/item';
 import { IMovie, ITvShow, ITvShowEpisode } from '../utils/types';
 
-const detailsGetHandler = (req: Request, res: Response) => {
+const detailsPatchHandler = (req: Request, res: Response) => {
   const idQuery = req.query.id;
 
   if (!idQuery) return res.status(400).json({ message: 'Missing required field: id' });
@@ -16,4 +16,4 @@ const detailsGetHandler = (req: Request, res: Response) => {
   res.status(200).json(item);
 };
 
-export { detailsGetHandler };
+export { detailsPatchHandler };

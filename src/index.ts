@@ -9,7 +9,8 @@ import { Server } from 'ws';
 import { collectionHandler } from './routes/collection.get';
 import { configGetHandler } from './routes/config.get';
 import { configPatchHandler } from './routes/config.patch';
-import { detailsHandler } from './routes/details.get';
+import { detailsGetHandler } from './routes/details.get';
+import { detailsPatchHandler } from './routes/details.patch';
 import { extractHandler } from './routes/extract.get';
 import { foldersHandler } from './routes/folders.get';
 import { previewHandler } from './routes/preview.get';
@@ -26,7 +27,6 @@ import { videoHandler } from './routes/video.get';
 
 import { load_config } from './utils/config';
 import { EMediaType, ENotificationType, IMovie, ITvShow } from './utils/types';
-import { explore_tvshows_folder } from './utils/explore';
 import { load_store, save_store } from './utils/store';
 import { search_movie, search_tvshow_episode } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
@@ -34,7 +34,13 @@ import { getProfiles } from './utils/profiles';
 
 const app = express();
 
-const wss = new Server({ port: 8080 });
+const wss = new Server({ noServer: true });
+wss.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    console.log('received: %s', message);
+  });
+  ws.send('connected');
+});
 
 app.use(cors());
 app.use(express.static('public'));
@@ -46,7 +52,8 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/collection', collectionHandler);
 app.get('/config', configGetHandler);
 app.patch('/config', configPatchHandler);
-app.get('/details', detailsHandler);
+app.get('/details', detailsGetHandler);
+app.patch('/details', detailsPatchHandler);
 app.get('/extract', extractHandler);
 app.get('/folders', foldersHandler);
 app.get('/preview', previewHandler);
@@ -147,7 +154,7 @@ watcher.on('all', async (event, path) => {
           save_store(folder, currentStore);
           break;
         case EMediaType.TvShows:
-          const tvshows = await explore_tvshows_folder(config, folder);
+          const tvshows = load_store(folder) as ITvShow[];
 
           for (const tvshow of tvshows) {
             if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
@@ -201,7 +208,7 @@ watcher.on('all', async (event, path) => {
           save_store(folder, newStore);
           break;
         case EMediaType.TvShows:
-          const tvshows = await explore_tvshows_folder(config, folder);
+          const tvshows = load_store(folder) as ITvShow[];
 
           for (const tvshow of tvshows) {
             if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
@@ -227,6 +234,12 @@ setInterval(async () => {
 }, 3600000);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (socket) => {
+    wss.emit('connection', socket, request);
+  });
 });
