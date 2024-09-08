@@ -57,15 +57,15 @@ const downloadAndApplyUpdate = async (downloadUrl: string) => {
   }
 };
 
-const checkForUpdates = async (): Promise<{ updateAvailable: boolean, latestVersion: string, downloadUrl?: string }> => {
+const checkForUpdates = async (): Promise<{ updateAvailable: boolean, latestVersion: string, version?: string, downloadUrl?: string }> => {
   try {
     const response = await axios.get(updaterUrl);
     const latestVersion = response.data.tag_name.slice(1);
 
     if (compareVersion(version, latestVersion)) {
       const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`);
-      return { updateAvailable: true, latestVersion, downloadUrl: asset.browser_download_url };
-    } else return { updateAvailable: false, latestVersion };
+      return { updateAvailable: true, version, latestVersion, downloadUrl: asset.browser_download_url };
+    } else return { updateAvailable: false, latestVersion: version };
   } catch (error) {
     console.error('Failed to check for updates:', error);
     return { updateAvailable: false, latestVersion: version };
