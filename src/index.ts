@@ -46,6 +46,7 @@ app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type'],
+  credentials: true,
 }));
 app.use(express.static('public'));
 app.use(express.static('assets'));
