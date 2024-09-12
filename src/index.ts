@@ -42,7 +42,11 @@ wss.on('connection', (ws) => {
   ws.send('connected');
 });
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+}));
 app.use(express.static('public'));
 app.use(express.static('assets'));
 app.use(express.static('views'));
