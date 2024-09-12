@@ -110,3 +110,18 @@ export enum ENotificationType {
   Watchlist,
   Favorites,
 }
+
+export interface ITracks {
+  audios: ITrack[],
+  subtitles: ITrack[],
+}
+
+export interface ITrack {
+  index: number,
+  codec_name?: string,
+  codec_type: string,
+  channel_layout?: string,
+  language: string,
+  handler_name?: string,
+  url: string,
+}
