@@ -57,6 +57,7 @@ const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise
   const stack = [folder.path];
 
   const tvshows: ITvShow[] = [];
+  const existing_tvshows = load_store(folder) as ITvShow[];
 
   while (stack.length > 0) {
     const current_path = stack.pop();
@@ -76,7 +77,8 @@ const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise
       if (date_match && date_match[0].length === 4 && date_match[0].length !== item.name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
       const title = date ? item.name.split(' ').slice(0, -1).join(' ') : item.name;
 
-      const tvshow = await search_tvshow(title, date, config);
+      const existing_tvshow = existing_tvshows.find((t) => t.path === `${current_path}/${item.name}`);
+      const tvshow = existing_tvshow || await search_tvshow(title, date, config);
       if (tvshow) {
         const seasons = await explore_tvshow_seasons(config, folder, tvshow, `${current_path}/${item.name}`);
         tvshows.push({
@@ -111,7 +113,8 @@ const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: 
       if (!season_match) continue;
       const season_number = season_match[0];
 
-      const season = await search_tvshow_season(tvshow.id, parseInt(season_number), config);
+      const existing_season = tvshow.seasons.find((s) => s.path === `${current_path}/${item.name}`);
+      const season = existing_season || await search_tvshow_season(tvshow.id, parseInt(season_number), config);
       if (season) {
         const episodes = await explore_tvshow_episodes(config, folder, tvshow, season, `${current_path}/${item.name}`);
         seasons.push({

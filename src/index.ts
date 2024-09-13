@@ -26,11 +26,12 @@ import { updatePostHandler } from './routes/update.post';
 import { videoHandler } from './routes/video.get';
 
 import { load_config } from './utils/config';
-import { EMediaType, ENotificationType, IMovie, ITvShow } from './utils/types';
+import { EMediaType, ENotificationType, IMovie, ITvShow, ITvShowEpisode } from './utils/types';
 import { load_store, save_store } from './utils/store';
 import { search_movie, search_tvshow_episode } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 import { getProfiles } from './utils/profiles';
+import { deleteSubtitles, extractSubtitles } from './utils/subtitles';
 
 const app = express();
 
@@ -145,15 +146,15 @@ watcher.on('all', async (event, path) => {
           if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
           const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
-          const newMovie = await search_movie(title, date, config);
+          const movie = await search_movie(title, date, config);
 
-          if (newMovie) {
+          if (movie) {
             currentStore.push({
-              ...newMovie,
+              ...movie,
               path,
             });
 
-            sendNotification(newMovie);
+            sendNotification(movie);
           }
 
           save_store(folder, currentStore);
@@ -209,6 +210,9 @@ watcher.on('all', async (event, path) => {
       switch (folder.media_type) {
         case EMediaType.Movies:
           const currentStore = load_store(folder) as IMovie[];
+          const movie = currentStore.find((movie) => movie.path === path);
+          if (!movie) return;
+          deleteSubtitles(movie);
           const newStore = currentStore.filter((movie) => movie.path !== path);
           save_store(folder, newStore);
           break;
@@ -219,6 +223,9 @@ watcher.on('all', async (event, path) => {
             if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
             for (const season of tvshow.seasons) {
               if (!season.path || !path.startsWith(season.path)) continue;
+              const episode = season.episodes.find((episode) => episode.path === path) as ITvShowEpisode;
+              if (!episode) continue;
+              deleteSubtitles(episode);
               const newEpisodes = season.episodes.filter((episode) => episode.path !== path);
               season.episodes = newEpisodes;
             }

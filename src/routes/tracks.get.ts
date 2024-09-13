@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import ffmpeg from 'fluent-ffmpeg';
 import { getVideoItemById } from '../utils/item';
 import { ITracks } from '../utils/types';
+import { extractSubtitles } from '../utils/subtitles';
 
 const tracksHandler = (req: Request, res: Response) => {
   const { id } = req.query;
@@ -26,23 +27,27 @@ const tracksHandler = (req: Request, res: Response) => {
         subtitles: [],
       };
 
+      extractSubtitles(videoItem);
+
       metadata.streams.map((stream) => {
         if (stream.codec_type === 'audio') tracks.audios.push({
-          index: stream.index,
+          index: tracks.audios.length,
           codec_name: stream.codec_name,
           codec_type: stream.codec_type,
           channel_layout: stream.channel_layout,
           language: stream.tags.language,
           handler_name: stream.tags.handler_name,
+          default: stream.disposition?.default === 1,
           url: `/track?id=${id}&extract_type=${stream.codec_type}&track_index=${tracks.audios.length}`,
         });
         if (stream.codec_type === 'subtitle') tracks.subtitles.push({
-          index: stream.index,
+          index: tracks.subtitles.length,
           codec_name: stream.codec_name,
           codec_type: stream.codec_type,
           channel_layout: stream.channel_layout,
           language: stream.tags.language,
           handler_name: stream.tags.handler_name,
+          default: stream.disposition?.default === 1,
           url: `/track?id=${id}&extract_type=${stream.codec_type}&track_index=${tracks.subtitles.length}`,
         });
       });
