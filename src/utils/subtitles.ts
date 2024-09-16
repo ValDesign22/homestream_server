@@ -50,14 +50,17 @@ function extractSubtitles(item: IMovie | ITvShowEpisode): void {
     console.log(`Extracting ${tracks.length} subtitles for ${item.title}`);
 
     for (const track of tracks) {
-      if (!subtitleExists(item, track.index)) await extractSubtitle(item, track.index);
+      if (track.codec_name && !subtitleExists(item, track.index, track.codec_name))
+        extractSubtitle(item, track.index, track.codec_name)
+          .then((destination) => console.log(`Extracted subtitle ${track.index} for ${item.title} at ${destination}`))
+          .catch((error) => console.error(error));
     }
 
     console.log(`Extracted ${tracks.length} subtitles for ${item.title}`);
   });
 }
 
-function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number): Promise<string> {
+function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
     if (!APP_STORAGE_PATH) return reject('APP_STORAGE_PATH not set');
@@ -66,13 +69,13 @@ function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number): Pr
 
     if (!item.path) return reject('Item has no path');
 
-    const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.vtt`;
+    const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
 
     ffmpeg(item.path)
       .noAudio()
       .noVideo()
       .outputOptions(['-map 0:s:' + track_index])
-      .outputFormat('webvtt')
+      .outputFormat(codec_name === 'ass' ? 'ass' : 'webvtt')
       .saveToFile(destination)
       .on('end', () => resolve(destination))
       .on('error', (error) => reject(error));
@@ -83,7 +86,7 @@ function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number): Pr
   });
 }
 
-function subtitleExists(item: IMovie | ITvShowEpisode, track_index: number): boolean {
+function subtitleExists(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): boolean {
   const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
   if (!APP_STORAGE_PATH) return false;
   if (!existsSync(APP_STORAGE_PATH)) return false;
@@ -91,17 +94,19 @@ function subtitleExists(item: IMovie | ITvShowEpisode, track_index: number): boo
 
   if (!item.path) return false;
 
-  const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.vtt`;
+  const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
   return existsSync(destination);
 }
 
-function getSubtitlePath(item: IMovie | ITvShowEpisode, track_index: number): string | null {
+function getSubtitlePath(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): string | null {
   const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
   if (!APP_STORAGE_PATH) return null;
   if (!existsSync(APP_STORAGE_PATH)) return null;
   if (!existsSync(`${APP_STORAGE_PATH}/subtitles`)) createSubtitlesFolder();
 
-  return `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.vtt`;
+  if (!subtitleExists(item, track_index, codec_name)) return null;
+
+  return `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
 }
 
 export { deleteSubtitles, extractSubtitles, extractSubtitle, subtitleExists, getSubtitlePath };

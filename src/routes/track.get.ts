@@ -49,8 +49,11 @@ const trackHandler = (req: Request, res: Response) => {
           })
           .pipe(res.writeHead(200, { 'Content-Type': 'audio/mpeg' }), { end: true });
       } else if (extract_type === 'subtitle') {
-        if (!subtitleExists(videoItem, streamIndex)) await extractSubtitle(videoItem, streamIndex);
-        const subtitlesPath = getSubtitlePath(videoItem, streamIndex);
+        if (stream.codec_name && !subtitleExists(videoItem, streamIndex, stream.codec_name))
+          extractSubtitle(videoItem, streamIndex, stream.codec_name)
+            .then((destination) => console.log(`Extracted subtitle ${streamIndex} for ${videoItem.title} at ${destination}`))
+            .catch((error) => console.error(error));
+        const subtitlesPath = getSubtitlePath(videoItem, streamIndex, stream.codec_name);
         if (!subtitlesPath) return res.status(404).json({ message: 'Cannot find any subtitles for this video' });
         res.sendFile(subtitlesPath);
       }
