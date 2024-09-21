@@ -56,6 +56,7 @@ export class Controller {
 
 export class Router {
   public router: ExpressRouter;
+  public logger: boolean;
 
   constructor(options: {
     controllers: any[];
@@ -73,6 +74,7 @@ export class Router {
 
     options.controllers.forEach((controller) => this.registerRoutes(router, controller));
     this.router = router;
+    this.logger = options.logger;
   }
 
   protected registerRoutes(router: ExpressRouter, controller: any) {
@@ -100,7 +102,7 @@ export class Router {
           default: throw new Error(`Unsupported HTTP method: ${httpMethod}`);
         }
 
-        console.log(`[${chalk.green(`ROUTE`)}] ${chalk.blue(httpMethod)} ${path}`);
+        if (this.logger) console.log(`[${chalk.green(`ROUTE`)}] ${chalk.blue(httpMethod)} ${path}`);
       }
     });
   }
