@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import { updaterUrl, version } from '../../package.json';
 import { createWriteStream } from 'node:fs';
 import { extract } from 'tar';
 import { exec as execCallback } from 'node:child_process';
@@ -67,6 +66,7 @@ const checkForUpdates = async (): Promise<{ updateAvailable: boolean, latestVers
 
     if (compareVersion(version, latestVersion)) {
       const asset = response.data.assets.find((asset: any) => asset.name === `update.tar.gz`);
+      if (!asset) return { updateAvailable: false, latestVersion: version };
       return { updateAvailable: true, version, latestVersion, downloadUrl: asset.browser_download_url };
     } else return { updateAvailable: false, latestVersion: version };
   } catch (error) {

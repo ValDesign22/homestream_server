@@ -1,21 +1,20 @@
 {
   "name": "homestream_server",
   "type": "module",
-  "exports": "./dist/src/index.js",
+  "exports": "./dist/index.js",
   "engines": {
     "node": ">=18"
   },
   "version": "1.1.7",
   "description": "HomeStream server for streaming media",
-  "main": "dist/src/index.js",
   "updaterUrl": "https://api.github.com/repos/ValDesign22/homestream_server/releases/latest",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "node dist/src/index.js",
+    "start": "node dist/index.js",
     "dev": "nodemon",
     "start:dev": "node --loader ts-node/esm src/index.ts",
-    "start:prod": "pm2 start dist/src/index.js --name HomeStream",
+    "start:prod": "pm2 start dist/index.js --name HomeStream",
     "stop:prod": "pm2 stop HomeStream",
     "restart:prod": "pm2 restart HomeStream"
   },

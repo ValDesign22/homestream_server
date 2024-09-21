@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import 'reflect-metadata';
 
-import chalk from 'chalk';
 import { watch } from 'chokidar';
 import cors from 'cors';
 import express from 'express';
 import { existsSync } from 'node:fs';
-// import Server from 'ws';
 
 import { collectionController } from './controllers/collection.js';
 import { configController } from './controllers/config.js';
@@ -27,18 +25,9 @@ import { load_store, save_store } from './utils/store.js';
 import { search_movie, search_tvshow_episode } from './utils/tmdb.js';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater.js';
 import { deleteSubtitles } from './utils/subtitles.js';
-import { registerRoutes, Router } from './utils/route.js';
-// import { getProfiles } from './utils/profiles.js';
+import { Router } from './utils/route.js';
 
 const app = express();
-
-// const wss = new Server({ noServer: true });
-// wss.on('connection', (ws) => {
-//   ws.on('message', (message) => {
-//     console.log('received: %s', message);
-//   });
-//   ws.send('connected');
-// });
 
 app.use(cors({
   origin: '*',
@@ -52,54 +41,18 @@ app.use(express.static('views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    console.log(`${chalk.blue(req.method)} ${req.path} - ${res.statusCode}`);
-  });
-
-  next();
-});
-
 app.use(new Router({
   controllers: [
     collectionController, configController, detailsController, foldersController,
     previewController, profilesController, setupController, storesController,
     trackController, tracksController, updateController, videoController,
   ],
+  logger: true,
 }).router);
 
 const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
-
-// const sendNotification = async (data: IMovie | ITvShow) => {
-//   const profiles = getProfiles();
-//   if (!profiles || !profiles.length) return;
-//   const media_type = data.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
-
-//   for (const profile of profiles) {
-//     if (profile.favorites.find((favorite) => favorite.id === data.id)) {
-//       return wss.clients.forEach((client) => {
-//         if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
-//           profile_id: profile.id,
-//           media_type,
-//           notification_type: ENotificationType.Favorites,
-//           data,
-//         }));
-//       });
-//     };
-//     if (profile.watchlist.find((watchlist) => watchlist.id === data.id)) {
-//       return wss.clients.forEach((client) => {
-//         if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
-//           profile_id: profile.id,
-//           media_type,
-//           notification_type: ENotificationType.Watchlist,
-//           data,
-//         }));
-//       });
-//     };
-//   }
-// };
 
 const watcher = watch(watchDir, {
   ignored: (path) => /(^|[\/\\])\../.test(path),
@@ -132,14 +85,10 @@ watcher.on('all', async (event, path) => {
 
           const movie = await search_movie(title, date, config);
 
-          if (movie) {
-            currentStore.push({
-              ...movie,
-              path,
-            });
-
-            // sendNotification(movie);
-          }
+          if (movie) currentStore.push({
+            ...movie,
+            path,
+          });
 
           save_store(folder, currentStore);
           break;
@@ -170,14 +119,10 @@ watcher.on('all', async (event, path) => {
               if (!episode_number) continue;
 
               const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
-              if (episode) {
-                season.episodes.push({
-                  ...episode,
-                  path,
-                });
-
-                // sendNotification(tvshow);
-              }
+              if (episode) season.episodes.push({
+                ...episode,
+                path,
+              });
             }
           }
 
@@ -233,9 +178,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// server.on('upgrade', (request, socket, head) => {
-//   wss.handleUpgrade(request, socket, head, (socket) => {
-//     wss.emit('connection', socket, request);
-//   });
-// });

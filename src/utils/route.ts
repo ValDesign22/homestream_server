@@ -24,36 +24,6 @@ export const Route = (options: RouteOptions) => {
   }
 }
 
-export const registerRoutes = (router: ExpressRouter, controller: any) => {
-  const prototype = Object.getPrototypeOf(controller);
-  const methods = Object.getOwnPropertyNames(prototype);
-
-  methods.forEach((method) => {
-    const routeOptions: RouteOptions = Reflect.getMetadata(ROUTE_METADATA_KEY, prototype, method);
-
-    if (routeOptions) {
-      const { path, method: httpMethod, query, body } = routeOptions;
-
-      const handler = (req: Request, res: Response) => {
-        if (query && !prototype.validateQuery(req, res, query)) return;
-        if (body && !prototype.validateBody(req, res, body)) return;
-        controller[method](req, res);
-      };
-
-      switch (httpMethod) {
-        case HttpMethod.GET: router.get(path, handler); break;
-        case HttpMethod.PATCH: router.patch(path, handler); break;
-        case HttpMethod.POST: router.post(path, handler); break;
-        case HttpMethod.PUT: router.put(path, handler); break;
-        case HttpMethod.DELETE: router.delete(path, handler); break;
-        default: throw new Error(`Unsupported HTTP method: ${httpMethod}`);
-      }
-
-      console.log(`[${chalk.green(`ROUTE`)}] ${chalk.blue(httpMethod)} ${path}`);
-    }
-  });
-}
-
 export class Controller {
   protected sendResponse(res: Response, data: any, status: number = 200) {
     res.status(status).json(data);
@@ -89,9 +59,49 @@ export class Router {
 
   constructor(options: {
     controllers: any[];
+    logger: boolean;
   }) {
     const router = ExpressRouter();
-    options.controllers.forEach((controller) => registerRoutes(router, controller));
+
+    if (options.logger) router.use((req, res, next) => {
+      res.on('finish', () => {
+        console.log(`${chalk.blue(req.method)} ${req.path} - ${res.statusCode}`);
+      });
+
+      next();
+    });
+
+    options.controllers.forEach((controller) => this.registerRoutes(router, controller));
     this.router = router;
+  }
+
+  protected registerRoutes(router: ExpressRouter, controller: any) {
+    const prototype = Object.getPrototypeOf(controller);
+    const methods = Object.getOwnPropertyNames(prototype);
+
+    methods.forEach((method) => {
+      const routeOptions: RouteOptions = Reflect.getMetadata(ROUTE_METADATA_KEY, prototype, method);
+
+      if (routeOptions) {
+        const { path, method: httpMethod, query, body } = routeOptions;
+
+        const handler = (req: Request, res: Response) => {
+          if (query && !prototype.validateQuery(req, res, query)) return;
+          if (body && !prototype.validateBody(req, res, body)) return;
+          controller[method](req, res);
+        };
+
+        switch (httpMethod) {
+          case HttpMethod.GET: router.get(path, handler); break;
+          case HttpMethod.PATCH: router.patch(path, handler); break;
+          case HttpMethod.POST: router.post(path, handler); break;
+          case HttpMethod.PUT: router.put(path, handler); break;
+          case HttpMethod.DELETE: router.delete(path, handler); break;
+          default: throw new Error(`Unsupported HTTP method: ${httpMethod}`);
+        }
+
+        console.log(`[${chalk.green(`ROUTE`)}] ${chalk.blue(httpMethod)} ${path}`);
+      }
+    });
   }
 }
