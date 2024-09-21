@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
-import { IMovie, ITrack, ITvShowEpisode } from "./types";
+import { IMovie, ITrack, ITvShowEpisode } from "./types.js";
 import ffmpeg from 'fluent-ffmpeg';
 
 function createSubtitlesFolder(): void {

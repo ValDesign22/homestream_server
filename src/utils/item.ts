@@ -1,6 +1,6 @@
-import { load_config } from './config';
-import { load_store } from './store';
-import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './types';
+import { load_config } from './config.js';
+import { load_store } from './store.js';
+import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './types.js';
 
 const getVideoItemById = (id: number): IMovie | ITvShowEpisode | null => {
   const config = load_config();

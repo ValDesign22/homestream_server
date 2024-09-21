@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { IProfile } from './types';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { IProfile } from './types.js';
 
 const getProfiles = (): IProfile[] | null => {
   const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;

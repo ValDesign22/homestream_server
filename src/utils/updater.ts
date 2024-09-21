@@ -1,9 +1,12 @@
 import axios from 'axios';
-import { updaterUrl, version } from '../../package.json';
-import { createWriteStream } from 'fs';
+// import { updaterUrl, version } from '../../package.json';
+import { createWriteStream } from 'node:fs';
 import { extract } from 'tar';
-import { exec as execCallback } from 'child_process';
-import { promisify } from 'util';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const updaterUrl = 'https://api.github.com/repos/ValDesign22/homestream_server/releases/latest';
+const version = '1.1.7';
 
 const exec = promisify(execCallback);
 

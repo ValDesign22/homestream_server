@@ -1,47 +1,44 @@
 import 'dotenv/config';
+import 'reflect-metadata';
 
+import chalk from 'chalk';
 import { watch } from 'chokidar';
 import cors from 'cors';
-import express from 'express';
-import { existsSync } from 'fs';
-import { Server } from 'ws';
+import express, { Router } from 'express';
+import { existsSync } from 'node:fs';
+// import Server from 'ws';
 
-import { collectionHandler } from './routes/collection.get';
-import { configGetHandler } from './routes/config.get';
-import { configPatchHandler } from './routes/config.patch';
-import { detailsGetHandler } from './routes/details.get';
-import { detailsPatchHandler } from './routes/details.patch';
-import { foldersHandler } from './routes/folders.get';
-import { previewHandler } from './routes/preview.get';
-import { profilesDelete } from './routes/profiles.delete';
-import { profilesGet } from './routes/profiles.get';
-import { profilesPatch } from './routes/profiles.patch';
-import { profilesPost } from './routes/profiles.post';
-import { setupHandler } from './routes/setup.get';
-import { storesHandler } from './routes/stores.get';
-import { trackHandler } from './routes/track.get';
-import { tracksHandler } from './routes/tracks.get';
-import { updateGetHandler } from './routes/update.get';
-import { updatePostHandler } from './routes/update.post';
-import { videoHandler } from './routes/video.get';
+import { collectionController } from './controllers/collection.js';
+import { configController } from './controllers/config.js';
+import { detailsController } from './controllers/details.js';
+import { foldersController } from './controllers/folders.js';
+import { previewController } from './controllers/preview.js';
+import { profilesController } from './controllers/profiles.js';
+import { setupController } from './controllers/setup.js';
+import { storesController } from './controllers/stores.js';
+import { trackController } from './controllers/track.js';
+import { tracksController } from './controllers/tracks.js';
+import { updateController } from './controllers/update.js';
+import { videoController } from './controllers/video.js';
 
-import { load_config } from './utils/config';
-import { EMediaType, ENotificationType, IMovie, ITvShow, ITvShowEpisode } from './utils/types';
-import { load_store, save_store } from './utils/store';
-import { search_movie, search_tvshow_episode } from './utils/tmdb';
-import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
-import { getProfiles } from './utils/profiles';
-import { deleteSubtitles, extractSubtitles } from './utils/subtitles';
+import { load_config } from './utils/config.js';
+import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './utils/types.js';
+import { load_store, save_store } from './utils/store.js';
+import { search_movie, search_tvshow_episode } from './utils/tmdb.js';
+import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater.js';
+import { deleteSubtitles } from './utils/subtitles.js';
+import { registerRoutes } from './utils/route.js';
+// import { getProfiles } from './utils/profiles.js';
 
 const app = express();
 
-const wss = new Server({ noServer: true });
-wss.on('connection', (ws) => {
-  ws.on('message', (message) => {
-    console.log('received: %s', message);
-  });
-  ws.send('connected');
-});
+// const wss = new Server({ noServer: true });
+// wss.on('connection', (ws) => {
+//   ws.on('message', (message) => {
+//     console.log('received: %s', message);
+//   });
+//   ws.send('connected');
+// });
 
 app.use(cors({
   origin: '*',
@@ -55,70 +52,60 @@ app.use(express.static('views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/collection', collectionHandler);
-app.get('/config', configGetHandler);
-app.patch('/config', configPatchHandler);
-app.get('/details', detailsGetHandler);
-app.patch('/details', detailsPatchHandler);
-app.get('/folders', foldersHandler);
-app.get('/preview', previewHandler);
-app.delete('/profiles', profilesDelete);
-app.get('/profiles', profilesGet);
-app.patch('/profiles', profilesPatch);
-app.post('/profiles', profilesPost);
-app.get('/setup', setupHandler);
-app.get('/stores', storesHandler);
-app.get('/track', trackHandler);
-app.get('/tracks', tracksHandler);
-app.get('/update', updateGetHandler);
-app.post('/update', updatePostHandler);
-app.get('/video', videoHandler);
-
 app.use((req, res, next) => {
   res.on('finish', () => {
-    console.log(`${req.method} ${req.path} - ${res.statusCode}`);
-    console.log('Headers:', res.getHeaders());
-    console.log('Body:', req.body);
+    console.log(`${chalk.blue(req.method)} ${req.path} - ${res.statusCode}`);
   });
 
   next();
 });
 
+
+const router = Router();
+[
+  collectionController, configController, detailsController, foldersController,
+  previewController, profilesController, setupController, storesController,
+  trackController, tracksController, updateController, videoController,
+].forEach((controller) => {
+  registerRoutes(router, controller);
+});
+app.use(router);
+
 const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');
 if (!existsSync(watchDir)) throw new Error('WATCH_DIR does not exist');
 
-const sendNotification = async (data: IMovie | ITvShow) => {
-  const profiles = getProfiles();
-  if (!profiles || !profiles.length) return;
-  const media_type = data.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
+// const sendNotification = async (data: IMovie | ITvShow) => {
+//   const profiles = getProfiles();
+//   if (!profiles || !profiles.length) return;
+//   const media_type = data.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
 
-  for (const profile of profiles) {
-    if (profile.favorites.find((favorite) => favorite.id === data.id)) {
-      return wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
-          profile_id: profile.id,
-          media_type,
-          notification_type: ENotificationType.Favorites,
-          data,
-        }));
-      });
-    };
-    if (profile.watchlist.find((watchlist) => watchlist.id === data.id)) {
-      return wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
-          profile_id: profile.id,
-          media_type,
-          notification_type: ENotificationType.Watchlist,
-          data,
-        }));
-      });
-    };
-  }
-};
+//   for (const profile of profiles) {
+//     if (profile.favorites.find((favorite) => favorite.id === data.id)) {
+//       return wss.clients.forEach((client) => {
+//         if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
+//           profile_id: profile.id,
+//           media_type,
+//           notification_type: ENotificationType.Favorites,
+//           data,
+//         }));
+//       });
+//     };
+//     if (profile.watchlist.find((watchlist) => watchlist.id === data.id)) {
+//       return wss.clients.forEach((client) => {
+//         if (client.readyState === WebSocket.OPEN) client.send(JSON.stringify({
+//           profile_id: profile.id,
+//           media_type,
+//           notification_type: ENotificationType.Watchlist,
+//           data,
+//         }));
+//       });
+//     };
+//   }
+// };
 
 const watcher = watch(watchDir, {
-  ignored: /(^|[\/\\])\../,
+  ignored: (path) => /(^|[\/\\])\../.test(path),
   persistent: true,
   ignoreInitial: true,
   depth: 99,
@@ -154,7 +141,7 @@ watcher.on('all', async (event, path) => {
               path,
             });
 
-            sendNotification(movie);
+            // sendNotification(movie);
           }
 
           save_store(folder, currentStore);
@@ -192,7 +179,7 @@ watcher.on('all', async (event, path) => {
                   path,
                 });
 
-                sendNotification(tvshow);
+                // sendNotification(tvshow);
               }
             }
           }
@@ -246,12 +233,12 @@ setInterval(async () => {
 }, 3600000);
 
 const port = process.env.PORT || 3000;
-const server = app.listen(port, () => {
+app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, (socket) => {
-    wss.emit('connection', socket, request);
-  });
-});
+// server.on('upgrade', (request, socket, head) => {
+//   wss.handleUpgrade(request, socket, head, (socket) => {
+//     wss.emit('connection', socket, request);
+//   });
+// });

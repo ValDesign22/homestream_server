@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { distance } from 'fastest-levenshtein';
-import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
+import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types.js';
 
 const create_request = async (url: string) => {
   let TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -99,7 +99,7 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
   };
 };
 
-const search_tvshow = async (title: string, date: string | null, config: IConfig) : Promise<ITvShow | null> => {
+const search_tvshow = async (title: string, date: string | null, config: IConfig): Promise<ITvShow | null> => {
   let { tmdb_language } = config;
 
   let search_url = `https://api.themoviedb.org/3/search/tv?query=${title}&language=${tmdb_language}${date ? `&first_air_date_year=${date}` : ''}`;

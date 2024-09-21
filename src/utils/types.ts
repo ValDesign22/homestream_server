@@ -119,10 +119,10 @@ export interface ITracks {
 export interface ITrack {
   index: number,
   codec_name?: string,
-  codec_type: string,
+  codec_type?: string,
   channel_layout?: string,
   language: string,
   handler_name?: string,
   default?: boolean,
-  url: string,
+  url?: string,
 }

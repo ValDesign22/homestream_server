@@ -1,7 +1,7 @@
-import { readdirSync } from 'fs';
-import { load_store } from './store';
-import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
-import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb';
+import { readdirSync } from 'node:fs';
+import { load_store } from './store.js';
+import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types.js';
+import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb.js';
 
 const videoExtensions = ['avi', 'mkv', 'mp4', 'webm', 'wmv'];
 

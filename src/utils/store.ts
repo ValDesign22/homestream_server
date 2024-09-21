@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { IFolder, IMovie, ITvShow } from './types';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { IFolder, IMovie, ITvShow } from './types.js';
 
 const load_store = (folder: IFolder): IMovie[] | ITvShow[] => {
   const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
