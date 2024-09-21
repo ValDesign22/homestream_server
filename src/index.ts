@@ -44,7 +44,6 @@ app.use(new Router({
     previewController, profilesController, setupController, storesController,
     trackController, tracksController, updateController, videoController,
   ],
-  logger: true,
 }).router);
 
 const watchDir = process.env.WATCH_DIR;

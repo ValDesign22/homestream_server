@@ -1,4 +1,5 @@
 import axios from 'axios';
+import chalk from 'chalk';
 import { createWriteStream } from 'node:fs';
 import { extract } from 'tar';
 import { exec as execCallback } from 'node:child_process';
@@ -37,23 +38,23 @@ const compareVersion = (current: string, latest: string): boolean => {
 
 const downloadAndApplyUpdate = async (downloadUrl: string) => {
   try {
-    console.log('Downloading update...');
+    console.log(`[${chalk.blue('UPDATER')}] Downloading update...`)
     await downloadFile(downloadUrl, 'update.tar.gz');
-    console.log('Update downloaded. Extracting...');
+    console.log(`[${chalk.blue('UPDATER')}] Update downloaded. Extracting...`)
 
     await extract({
       file: 'update.tar.gz',
       cwd: process.cwd(),
     });
 
-    console.log('Update extracted. Installing dependencies...');
+    console.log(`[${chalk.blue('UPDATER')}] Update extracted. Installing dependencies...`)
 
     await exec(`cd ${process.cwd()} && npm install`);
-    console.log('Dependencies installed. Restarting server...');
+    console.log(`[${chalk.blue('UPDATER')}] Dependencies installed. Restarting server...`)
 
     await exec('pm2 restart all');
-    console.log('Server restarted.');
-    console.log('Update applied.');
+    console.log(`[${chalk.blue('UPDATER')}] Server restarted.`);
+    console.log(`[${chalk.blue('UPDATER')}] Update applied.`);
   } catch (error) {
     console.error('Failed to download update:', error);
   }

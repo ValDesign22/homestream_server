@@ -10,8 +10,7 @@ class CollectionController extends Controller {
   })
   public get(req: express.Request, res: express.Response) {
     const { id } = req.query;
-    let collection = getCollectionById(parseInt(id as string, 10));
-    return this.sendResponse(res, collection);
+    return this.sendResponse(res, getCollectionById(parseInt(id as string, 10)));
   }
 }
 

@@ -3,7 +3,7 @@ import { distance } from 'fastest-levenshtein';
 import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types.js';
 
 const create_request = async (url: string) => {
-  let TMDB_API_KEY = process.env.TMDB_API_KEY;
+  const TMDB_API_KEY = process.env.TMDB_API_KEY;
   if (!TMDB_API_KEY) throw new Error('TMDB_API_KEY is not defined');
 
   const response = await axios.get(url, {
@@ -19,9 +19,7 @@ const create_request = async (url: string) => {
 };
 
 const find_image_path = (images: any[], language: string | null): string | null => {
-  for (const image of images) {
-    if (image.iso_639_1 === language) return image.file_path;
-  }
+  for (const image of images) if (image.iso_639_1 === language) return image.file_path;
   return null;
 };
 
@@ -48,11 +46,9 @@ const fetch_images = async (id: number, media_type: EMediaType, config: IConfig)
 };
 
 const search_movie = async (title: string, date: string | null, config: IConfig): Promise<IMovie | null> => {
-  let { tmdb_language } = config;
+  const { tmdb_language } = config;
 
-  let search_url = `https://api.themoviedb.org/3/search/movie?query=${title}&language=${tmdb_language}${date ? `&year=${date}` : ''}`;
-
-  const search_results = (await create_request(search_url)).results;
+  const search_results = (await create_request(`https://api.themoviedb.org/3/search/movie?query=${title}&language=${tmdb_language}${date ? `&year=${date}` : ''}`)).results;
   if (!search_results || search_results.length === 0) return null;
 
   let best_match = null;
@@ -66,13 +62,10 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
     }
   }
 
-  let movie_id = best_match.id;
-  let movie_url = `https://api.themoviedb.org/3/movie/${movie_id}?language=${tmdb_language}&append_to_response=release_dates`;
+  const movie_id = best_match.id;
 
-  const movie_response = await create_request(movie_url);
+  const movie_response = await create_request(`https://api.themoviedb.org/3/movie/${movie_id}?language=${tmdb_language}&append_to_response=release_dates`);
   if (!movie_response) return null;
-
-  const collection_id = movie_response.belongs_to_collection ? movie_response.belongs_to_collection.id : null;
 
   const genres: IGenre[] = movie_response.genres ? movie_response.genres.map((genre: any) => {
     return {
@@ -85,7 +78,7 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
 
   return {
     id: movie_response.id,
-    collection_id,
+    collection_id: movie_response.belongs_to_collection ? movie_response.belongs_to_collection.id : null,
     title: movie_response.title,
     original_title: movie_response.original_title,
     overview: movie_response.overview,
@@ -100,11 +93,9 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
 };
 
 const search_tvshow = async (title: string, date: string | null, config: IConfig): Promise<ITvShow | null> => {
-  let { tmdb_language } = config;
+  const { tmdb_language } = config;
 
-  let search_url = `https://api.themoviedb.org/3/search/tv?query=${title}&language=${tmdb_language}${date ? `&first_air_date_year=${date}` : ''}`;
-
-  const search_results = (await create_request(search_url)).results;
+  const search_results = (await create_request(`https://api.themoviedb.org/3/search/tv?query=${title}&language=${tmdb_language}${date ? `&first_air_date_year=${date}` : ''}`)).results;
   if (!search_results || search_results.length === 0) return null;
 
   let best_match = null;
@@ -118,10 +109,9 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
     }
   }
 
-  let tvshow_id = best_match.id;
-  let tvshow_url = `https://api.themoviedb.org/3/tv/${tvshow_id}?language=${tmdb_language}&append_to_response=release_dates`;
+  const tvshow_id = best_match.id;
 
-  const tvshow_response = await create_request(tvshow_url);
+  const tvshow_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}?language=${tmdb_language}&append_to_response=release_dates`);
   if (!tvshow_response) return null;
 
   const genres: IGenre[] = tvshow_response.genres ? tvshow_response.genres.map((genre: any) => {
@@ -148,18 +138,12 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
 };
 
 const search_tvshow_season = async (tvshow_id: number, season_number: number, config: IConfig): Promise<ITvShowSeason | null> => {
-  let { tmdb_language } = config;
+  const { tmdb_language } = config;
 
-  let season_url = `https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}?language=${tmdb_language}`;
-
-  const season_response = await create_request(season_url);
+  const season_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}?language=${tmdb_language}`);
   if (!season_response) return null;
 
-  const posters_url = `https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/images`;
-
-  const images = await create_request(posters_url);
-
-  const poster_path = find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null);
+  const images = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/images`);
 
   return {
     id: season_response.id,
@@ -167,24 +151,18 @@ const search_tvshow_season = async (tvshow_id: number, season_number: number, co
     name: season_response.name,
     overview: season_response.overview,
     episodes: [],
-    poster_path: poster_path,
+    poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
     path: null,
   };
 };
 
 const search_tvshow_episode = async (tvshow_id: number, season_number: number, episode_number: number, config: IConfig): Promise<ITvShowEpisode | null> => {
-  let { tmdb_language } = config;
+  const { tmdb_language } = config;
 
-  let episode_url = `https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}?language=${tmdb_language}`;
-
-  const episode_response = await create_request(episode_url);
+  const episode_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}?language=${tmdb_language}`);
   if (!episode_response) return null;
 
-  const stills_url = `https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}/images`;
-
-  const images = await create_request(stills_url);
-
-  const still_path = find_image_path(images.stills, tmdb_language) || find_image_path(images.stills, 'en') || find_image_path(images.stills, null);
+  const images = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}/images`);
 
   return {
     id: episode_response.id,
@@ -192,7 +170,7 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
     title: episode_response.name,
     overview: episode_response.overview,
     air_date: episode_response.air_date,
-    still_path: still_path,
+    still_path: find_image_path(images.stills, tmdb_language) || find_image_path(images.stills, 'en') || find_image_path(images.stills, null),
     runtime: episode_response.runtime,
     path: null,
   };
@@ -212,9 +190,7 @@ const search_video = async (id: number, media_type: EMediaType, config: IConfig)
   const videos = await create_request(`${base_url}/${id}/videos?language=${config.tmdb_language}`);
   if (!videos || !videos.results || videos.results.length === 0) return null;
 
-  for (const video of videos.results) {
-    if (video.type === 'Trailer' && video.site === 'YouTube') return video.key;
-  }
+  for (const video of videos.results) if (video.type === 'Trailer' && video.site === 'YouTube') return video.key;
 
   return null;
 };
