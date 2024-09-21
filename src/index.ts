@@ -4,7 +4,7 @@ import 'reflect-metadata';
 import chalk from 'chalk';
 import { watch } from 'chokidar';
 import cors from 'cors';
-import express, { Router } from 'express';
+import express from 'express';
 import { existsSync } from 'node:fs';
 // import Server from 'ws';
 
@@ -27,7 +27,7 @@ import { load_store, save_store } from './utils/store.js';
 import { search_movie, search_tvshow_episode } from './utils/tmdb.js';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater.js';
 import { deleteSubtitles } from './utils/subtitles.js';
-import { registerRoutes } from './utils/route.js';
+import { registerRoutes, Router } from './utils/route.js';
 // import { getProfiles } from './utils/profiles.js';
 
 const app = express();
@@ -60,16 +60,13 @@ app.use((req, res, next) => {
   next();
 });
 
-
-const router = Router();
-[
-  collectionController, configController, detailsController, foldersController,
-  previewController, profilesController, setupController, storesController,
-  trackController, tracksController, updateController, videoController,
-].forEach((controller) => {
-  registerRoutes(router, controller);
-});
-app.use(router);
+app.use(new Router({
+  controllers: [
+    collectionController, configController, detailsController, foldersController,
+    previewController, profilesController, setupController, storesController,
+    trackController, tracksController, updateController, videoController,
+  ],
+}).router);
 
 const watchDir = process.env.WATCH_DIR;
 if (!watchDir) throw new Error('WATCH_DIR is not defined');

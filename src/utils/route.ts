@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { Request, Response, Router } from 'express';
+import { Request, Response, Router as ExpressRouter } from 'express';
 
 const ROUTE_METADATA_KEY = Symbol('route_metadata');
 
@@ -24,7 +24,7 @@ export const Route = (options: RouteOptions) => {
   }
 }
 
-export const registerRoutes = (router: Router, controller: any) => {
+export const registerRoutes = (router: ExpressRouter, controller: any) => {
   const prototype = Object.getPrototypeOf(controller);
   const methods = Object.getOwnPropertyNames(prototype);
 
@@ -81,5 +81,17 @@ export class Controller {
       }
     }
     return true;
+  }
+}
+
+export class Router {
+  public router: ExpressRouter;
+
+  constructor(options: {
+    controllers: any[];
+  }) {
+    const router = ExpressRouter();
+    options.controllers.forEach((controller) => registerRoutes(router, controller));
+    this.router = router;
   }
 }
