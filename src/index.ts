@@ -35,9 +35,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
   credentials: true,
 }));
-app.use(express.static('public'));
-app.use(express.static('assets'));
-app.use(express.static('views'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
