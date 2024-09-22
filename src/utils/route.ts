@@ -34,21 +34,17 @@ export class Controller {
   }
 
   protected validateQuery(req: Request, res: Response, query: string[]) {
-    for (const param of query) {
-      if (!req.query[param]) {
-        this.sendError(res, `Missing required param: ${param}`, 400);
-        return false;
-      }
+    for (const param of query) if (!req.query[param]) {
+      this.sendError(res, `Missing required param: ${param}`, 400);
+      return false;
     }
     return true;
   }
 
   protected validateBody(req: Request, res: Response, body: string[]) {
-    for (const param of body) {
-      if (!req.body[param]) {
-        this.sendError(res, `Missing required body field: ${param}`, 400);
-        return false;
-      }
+    for (const param of body) if (!req.body[param]) {
+      this.sendError(res, `Missing required body field: ${param}`, 400);
+      return false;
     }
     return true;
   }
@@ -63,10 +59,7 @@ export class Router {
     const router = ExpressRouter();
 
     router.use((req, res, next) => {
-      res.on('finish', () => {
-        console.log(`${chalk.blue(req.method)} ${req.path} - ${res.statusCode}`);
-      });
-
+      res.on('finish', () => console.log(`[${chalk.green('REQUEST')}] ${chalk.blue(req.method)} ${req.path} - ${res.statusCode}`));
       next();
     });
 

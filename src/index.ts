@@ -90,7 +90,6 @@ watcher.on('all', async (event, path) => {
           break;
         case EMediaType.TvShows:
           const tvshows = load_store(folder) as ITvShow[];
-
           for (const tvshow of tvshows) {
             if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
             for (const season of tvshow.seasons) {
@@ -143,7 +142,6 @@ watcher.on('all', async (event, path) => {
           break;
         case EMediaType.TvShows:
           const tvshows = load_store(folder) as ITvShow[];
-
           for (const tvshow of tvshows) {
             if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
             for (const season of tvshow.seasons) {
@@ -171,6 +169,4 @@ setInterval(async () => {
 }, 3600000);
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+app.listen(port, () => console.log(`Server is running on port ${port}`));

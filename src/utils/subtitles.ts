@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
-import { IMovie, ITrack, ITvShowEpisode } from "./types.js";
+import chalk from 'chalk';
+import { existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { IMovie, ITrack, ITvShowEpisode } from './types.js';
 import ffmpeg from 'fluent-ffmpeg';
 
 function createSubtitlesFolder(): void {
@@ -23,9 +24,7 @@ function deleteSubtitles(item: IMovie | ITvShowEpisode): void {
 
   const files = readdirSync(subtitlesPath);
 
-  for (const file of files) {
-    if (file.startsWith(`${item.id}_`)) unlinkSync(`${subtitlesPath}/${file}`);
-  }
+  for (const file of files) if (file.startsWith(`${item.id}_`)) unlinkSync(`${subtitlesPath}/${file}`);
 }
 
 function extractSubtitles(item: IMovie | ITvShowEpisode): void {
@@ -47,16 +46,14 @@ function extractSubtitles(item: IMovie | ITvShowEpisode): void {
       url: `/track?id=${item.id}&extract_type=${subtitle.codec_type}&track_index=${index}`,
     })) as ITrack[];
 
-    console.log(`Extracting ${tracks.length} subtitles for ${item.title}`);
+    console.log(`[${chalk.green('TRACKS')}] Extracting ${tracks.length} subtitles for ${item.title}`);
 
-    for (const track of tracks) {
-      if (track.codec_name && !subtitleExists(item, track.index, track.codec_name))
-        extractSubtitle(item, track.index, track.codec_name)
-          .then((destination) => console.log(`Extracted subtitle ${track.index} for ${item.title} at ${destination}`))
-          .catch((error) => console.error(error));
-    }
+    for (const track of tracks) if (track.codec_name && !subtitleExists(item, track.index, track.codec_name))
+      extractSubtitle(item, track.index, track.codec_name)
+        .then((destination) => console.log(`[${chalk.green('TRACKS')}] Extracted subtitle ${track.index + 1}/${tracks.length} for ${item.id} at ${destination}`))
+        .catch((error) => console.error(error));
 
-    console.log(`Extracted ${tracks.length} subtitles for ${item.title}`);
+    console.log(`[${chalk.green('TRACKS')}] Extracted ${tracks.length} subtitles for ${item.title}`);
   });
 }
 
@@ -80,7 +77,7 @@ function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number, cod
       .on('end', () => resolve(destination))
       .on('error', (error) => reject(error));
 
-    console.log(`Extracting subtitle ${track_index} for ${item.title}`);
+    console.log(`[${chalk.green('TRACKS')}] Extracting subtitle ${track_index} for ${item.id}`);
 
     return destination;
   });

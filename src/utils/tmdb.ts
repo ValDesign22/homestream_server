@@ -195,4 +195,4 @@ const search_video = async (id: number, media_type: EMediaType, config: IConfig)
   return null;
 };
 
-export { search_movie, search_tvshow, search_tvshow_season, search_tvshow_episode, search_video };
+export { create_request, fetch_images, search_movie, search_tvshow, search_tvshow_season, search_tvshow_episode, search_video };

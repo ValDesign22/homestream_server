@@ -18,7 +18,7 @@ class UpdateController extends Controller {
   })
   public async post(_: express.Request, res: express.Response) {
     const update = await checkForUpdates();
-    if (!update.updateAvailable) return this.sendError(res, 'No updates available', 204);
+    if (!update.updateAvailable) return this.sendResponse(res, 'No updates available');
     if (!update.downloadUrl) return this.sendError(res, 'Failed to download update');
     else await downloadAndApplyUpdate(update.downloadUrl);
     return this.sendResponse(res, 'Update applied');

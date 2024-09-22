@@ -1,4 +1,5 @@
 import express from 'express';
+import chalk from 'chalk';
 import { getVideoItemById } from '../utils/item.js';
 import ffmpeg from 'fluent-ffmpeg';
 import { extractSubtitle, getSubtitlePath, subtitleExists } from '../utils/subtitles.js';
@@ -51,7 +52,7 @@ class TrackController extends Controller {
         } else if (extract_type === 'subtitle') {
           if (stream.codec_name && !subtitleExists(videoItem, streamIndex, stream.codec_name))
             extractSubtitle(videoItem, streamIndex, stream.codec_name)
-              .then((destination) => console.log(`Extracted subtitle ${streamIndex} for ${videoItem.title} at ${destination}`))
+              .then((destination) => console.log(`[${chalk.green('TRACKS')}] Extracted subtitle ${streamIndex} for ${videoItem.id} at ${destination}`))
               .catch((error) => console.error(error));
           const subtitlesPath = getSubtitlePath(videoItem, streamIndex, stream.codec_name);
           if (!subtitlesPath) return this.sendError(res, 'Cannot find any subtitles for this video', 404);
