@@ -9,7 +9,20 @@ class TrackController extends Controller {
   @Route({
     path: '/track',
     method: HttpMethod.GET,
-    query: ['id', 'extract_type', 'track_index'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }, {
+      type: 'string',
+      required: true,
+      name: 'extract_type',
+      match: /^(audio|subtitle)$/,
+    }, {
+      type: 'number',
+      required: true,
+      name: 'track_index',
+    }],
   })
   public get(req: express.Request, res: express.Response) {
     const { id, extract_type, track_index } = req.query;

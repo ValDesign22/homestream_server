@@ -7,7 +7,11 @@ class VideoController extends Controller {
   @Route({
     path: '/video',
     method: HttpMethod.GET,
-    query: ['id'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }],
   })
   public get(req: express.Request, res: express.Response) {
     const { id } = req.query;

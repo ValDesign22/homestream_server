@@ -12,6 +12,7 @@ import { detailsController } from './controllers/details.js';
 import { foldersController } from './controllers/folders.js';
 import { previewController } from './controllers/preview.js';
 import { profilesController } from './controllers/profiles.js';
+import { searchController } from './controllers/search.js';
 import { setupController } from './controllers/setup.js';
 import { storesController } from './controllers/stores.js';
 import { trackController } from './controllers/track.js';
@@ -41,8 +42,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(new Router({
   controllers: [
     collectionController, configController, detailsController, foldersController,
-    previewController, profilesController, setupController, storesController,
-    trackController, tracksController, updateController, videoController,
+    previewController, profilesController, searchController, setupController,
+    storesController, trackController, tracksController, updateController,
+    videoController,
   ],
 }).router);
 

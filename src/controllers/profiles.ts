@@ -50,7 +50,11 @@ class ProfilesController extends Controller {
   @Route({
     path: '/profiles',
     method: HttpMethod.DELETE,
-    query: ['id'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }],
   })
   public delete(req: express.Request, res: express.Response) {
     const { id } = req.query;

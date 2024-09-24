@@ -10,7 +10,11 @@ class DetailsController extends Controller {
   @Route({
     path: '/details',
     method: HttpMethod.GET,
-    query: ['id'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }],
   })
   public get(req: express.Request, res: express.Response) {
     const { id } = req.query;
@@ -25,7 +29,19 @@ class DetailsController extends Controller {
   @Route({
     path: '/details',
     method: HttpMethod.PATCH,
-    query: ['id', 'new_id', 'type'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }, {
+      type: 'number',
+      required: true,
+      name: 'new_id',
+    }, {
+      type: 'number',
+      required: true,
+      name: 'type',
+    }],
   })
   public async patch(req: express.Request, res: express.Response) {
     const { id, new_id, type } = req.query;

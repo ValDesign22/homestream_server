@@ -16,7 +16,37 @@ class ConfigController extends Controller {
   @Route({
     path: '/config',
     method: HttpMethod.PATCH,
-    body: ['folders', 'tmdb_language'],
+    body: [{
+      type: 'array',
+      required: true,
+      name: 'folders',
+      values: [{
+        type: 'object',
+        required: true,
+        name: 'folder',
+        keys: [{
+          type: 'number',
+          required: true,
+          name: 'id',
+        }, {
+          type: 'string',
+          required: true,
+          name: 'name',
+        }, {
+          type: 'string',
+          required: true,
+          name: 'path',
+        }, {
+          type: 'number',
+          required: true,
+          name: 'media_type',
+        }],
+      }],
+    }, {
+      type: 'string',
+      required: true,
+      name: 'tmdb_language',
+    }],
   })
   public patch(req: express.Request, res: express.Response) {
     const { folders, tmdb_language } = req.body as Request['body'] & IConfig;

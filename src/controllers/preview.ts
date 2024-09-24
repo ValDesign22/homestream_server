@@ -9,7 +9,11 @@ class PreviewController extends Controller {
   @Route({
     path: '/preview',
     method: HttpMethod.GET,
-    query: ['id'],
+    query: [{
+      type: 'number',
+      required: true,
+      name: 'id',
+    }],
   })
   public async get(req: express.Request, res: express.Response) {
     const { id } = req.query;
