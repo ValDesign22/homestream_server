@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { IConfig } from './types.js';
+import { IConfig } from './types';
 
 const load_config = (): IConfig => {
   const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;

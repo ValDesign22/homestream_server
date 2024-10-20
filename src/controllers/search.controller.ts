@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
-import { search } from '../utils/tmdb.js';
+import { Request, Response } from 'express';
+import { search } from '../utils/tmdb';
 
 @Controller('/search')
 export class SearchController {
@@ -16,7 +16,7 @@ export class SearchController {
       match: /^(movie|tv)$/,
     }],
   })
-  public async get(req: express.Request, res: express.Response) {
+  public async get(req: Request, res: Response) {
     const { query, type } = req.query;
 
     const results = await search(query as string, type as string);

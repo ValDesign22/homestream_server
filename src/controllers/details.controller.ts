@@ -1,10 +1,10 @@
 import { Controller, Get, Patch } from '@nuxum/core';
-import express from 'express';
-import { EMediaType, IGenre, IMovie, ITvShow, ITvShowEpisode } from '../utils/types.js';
-import { getVideoItemById, searchItemById } from '../utils/item.js';
-import { load_config } from '../utils/config.js';
-import { create_request, fetch_images } from '../utils/tmdb.js';
-import { load_store, save_store } from '../utils/store.js';
+import { Request, Response } from 'express';
+import { EMediaType, IGenre, IMovie, ITvShow, ITvShowEpisode } from '../utils/types';
+import { getVideoItemById, searchItemById } from '../utils/item';
+import { load_config } from '../utils/config';
+import { create_request, fetch_images } from '../utils/tmdb';
+import { load_store, save_store } from '../utils/store';
 
 @Controller('/details')
 export class DetailsController {
@@ -15,7 +15,7 @@ export class DetailsController {
       name: 'id',
     }],
   })
-  public get(req: express.Request, res: express.Response) {
+  public get(req: Request, res: Response) {
     const { id } = req.query;
     let item: IMovie | ITvShow | ITvShowEpisode | null = searchItemById(parseInt(id as string, 10));
     if (!item) {
@@ -40,7 +40,7 @@ export class DetailsController {
       name: 'type',
     }],
   })
-  public async patch(req: express.Request, res: express.Response) {
+  public async patch(req: Request, res: Response) {
     const { id, new_id, type } = req.query;
     const item: IMovie | ITvShow | null = searchItemById(parseInt(id as string, 10));
     if (!item || !item.path) return res.status(404).json({ message: 'Item not found' });

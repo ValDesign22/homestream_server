@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
-import ffmpeg from 'fluent-ffmpeg';
-import { getVideoItemById } from '../utils/item.js';
-import { ITrack, ITracks } from '../utils/types.js';
-import { extractSubtitles } from '../utils/subtitles.js';
+import { Request, Response } from 'express';
+import { ffprobe } from 'fluent-ffmpeg';
+import { getVideoItemById } from '../utils/item';
+import { ITrack, ITracks } from '../utils/types';
+import { extractSubtitles } from '../utils/subtitles';
 
 @Controller('/tracks')
 export class TracksController {
@@ -14,7 +14,7 @@ export class TracksController {
       name: 'id',
     }],
   })
-  public get(req: express.Request, res: express.Response) {
+  public get(req: Request, res: Response) {
     const { id } = req.query;
 
     const videoItem = getVideoItemById(parseInt(id as string, 10));
@@ -24,7 +24,7 @@ export class TracksController {
     if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
     try {
-      ffmpeg.ffprobe(videoPath, (error, metadata) => {
+      ffprobe(videoPath, (error, metadata) => {
         if (error) {
           console.error(error);
           return res.status(500).json({ message: 'Error extracting video metadata' });

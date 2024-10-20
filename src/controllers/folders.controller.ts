@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
+import { Request, Response } from 'express';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'path';
 
@@ -13,7 +13,7 @@ interface IFolderItem {
 @Controller('/folders')
 export class FoldersController {
   @Get()
-  public get(_: express.Request, res: express.Response) {
+  public get(_: Request, res: Response) {
     const FILES_FOLDER = process.env.FILES_FOLDER;
     if (!FILES_FOLDER) return res.status(500).json({ message: 'Files folder not set' });
 
@@ -25,6 +25,7 @@ export class FoldersController {
     }];
 
     const root = stack[0];
+    let lastId = root.id;
 
     while (stack.length) {
       const current = stack.pop();
@@ -38,7 +39,7 @@ export class FoldersController {
 
         if (itemStat.isDirectory()) {
           const folder: IFolderItem = {
-            id: this.getLastId(root) + 1,
+            id: ++lastId,
             name: item,
             path: itemPath,
             children: []
@@ -52,20 +53,5 @@ export class FoldersController {
     }
 
     return res.status(200).json(root.children);
-  }
-
-  private getLastId(root: IFolderItem): number {
-    let lastId = root.id;
-    const stack = [root];
-
-    while (stack.length) {
-      const current = stack.pop();
-      if (!current) continue;
-
-      if (current.id > lastId) lastId = current.id;
-      if (current.children) stack.push(...current.children);
-    }
-
-    return lastId;
   }
 }

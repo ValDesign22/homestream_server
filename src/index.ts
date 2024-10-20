@@ -4,14 +4,14 @@ import { NuxumApp } from '@nuxum/core';
 import { watch } from 'chokidar';
 import { existsSync } from 'node:fs';
 
-import { AppModule } from './modules/app.module.js';
+import { AppModule } from './modules/app.module';
 
-import { load_config } from './utils/config.js';
-import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './utils/types.js';
-import { load_store, save_store } from './utils/store.js';
-import { search_movie, search_tvshow_episode } from './utils/tmdb.js';
-import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater.js';
-import { deleteSubtitles } from './utils/subtitles.js';
+import { load_config } from './utils/config';
+import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './utils/types';
+import { load_store, save_store } from './utils/store';
+import { search_movie, search_tvshow_episode } from './utils/tmdb';
+import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
+import { deleteSubtitles } from './utils/subtitles';
 
 
 async function bootstrap() {

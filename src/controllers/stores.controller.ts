@@ -1,13 +1,13 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
-import { load_config } from '../utils/config.js';
-import { load_store } from '../utils/store.js';
-import { IMovie, ITvShow } from '../utils/types.js';
+import { Request, Response } from 'express';
+import { load_config } from '../utils/config';
+import { load_store } from '../utils/store';
+import { IMovie, ITvShow } from '../utils/types';
 
 @Controller('/stores')
 export class StoresController {
   @Get()
-  public get(_: express.Request, res: express.Response) {
+  public get(_: Request, res: Response) {
     const config = load_config();
 
     const stores: Record<string, IMovie[] | ITvShow[]> = {};

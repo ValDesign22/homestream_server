@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { distance } from 'fastest-levenshtein';
-import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types.js';
-import { load_config } from './config.js';
+import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
+import { load_config } from './config';
 
 const create_request = async (url: string) => {
   const TMDB_API_KEY = process.env.TMDB_API_KEY;

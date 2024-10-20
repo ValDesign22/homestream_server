@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
-import { IMovie, ITrack, ITvShowEpisode } from './types.js';
+import { IMovie, ITrack, ITvShowEpisode } from './types';
 import ffmpeg from 'fluent-ffmpeg';
 
 function createSubtitlesFolder(): void {

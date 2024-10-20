@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
+import { Request, Response } from 'express';
 import { createReadStream, statSync } from 'node:fs';
-import { getVideoItemById } from '../utils/item.js';
+import { getVideoItemById } from '../utils/item';
 
 @Controller('/video')
 export class VideoController {
@@ -12,7 +12,7 @@ export class VideoController {
       name: 'id',
     }],
   })
-  public get(req: express.Request, res: express.Response) {
+  public get(req: Request, res: Response) {
     const { id } = req.query;
 
     const videoItem = getVideoItemById(parseInt(id as string, 10));

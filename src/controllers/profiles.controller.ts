@@ -1,12 +1,12 @@
 import { Controller, Delete, Get, Patch, Post } from '@nuxum/core';
-import express from 'express';
-import { getProfiles, saveProfiles } from '../utils/profiles.js';
-import { IProfile } from '../utils/types.js';
+import { Request, Response } from 'express';
+import { getProfiles, saveProfiles } from '../utils/profiles';
+import { IProfile } from '../utils/types';
 
 @Controller('/profiles')
 export class ProfilesController {
   @Get()
-  public get(_: express.Request, res: express.Response) {
+  public get(_: Request, res: Response) {
     const profiles = getProfiles();
     return res.status(200).json(profiles || []);
   }
@@ -19,7 +19,7 @@ export class ProfilesController {
     }],
     body: ['updatedProfile'],
   })
-  public patch(req: express.Request, res: express.Response) {
+  public patch(req: Request, res: Response) {
     const { id } = req.query;
     if (isNaN(parseInt(id as string, 10))) return res.status(400).json({ message: 'Invalid profile id' });
     const { updatedProfile } = req.body as Request['body'] & { updatedProfile: IProfile };
@@ -36,7 +36,7 @@ export class ProfilesController {
   @Post({
     body: ['newProfile'],
   })
-  public post(req: express.Request, res: express.Response) {
+  public post(req: Request, res: Response) {
     const newProfile = req.body as Request['body'] & { newProfile: IProfile };
     const profiles = getProfiles();
     if (!profiles) return res.status(500).json({ message: 'Internal Server Error' });
@@ -52,7 +52,7 @@ export class ProfilesController {
       name: 'id',
     }],
   })
-  public delete(req: express.Request, res: express.Response) {
+  public delete(req: Request, res: Response) {
     const { id } = req.query;
     if (isNaN(parseInt(id as string, 10))) return res.status(400).json({ message: 'Invalid id' });
 

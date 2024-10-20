@@ -1,12 +1,12 @@
 import { Controller, Get, Patch } from '@nuxum/core';
-import express from 'express';
-import { load_config, save_config } from '../utils/config.js';
-import { IConfig } from '../utils/types.js';
+import { Request, Response } from 'express';
+import { load_config, save_config } from '../utils/config';
+import { IConfig } from '../utils/types';
 
 @Controller('/config')
 export class ConfigController {
   @Get()
-  public get(_: express.Request, res: express.Response) {
+  public get(_: Request, res: Response) {
     const config = load_config();
     return res.status(200).json(config);
   }
@@ -16,27 +16,23 @@ export class ConfigController {
       type: 'array',
       required: true,
       name: 'folders',
+      itemType: 'object',
       nested: [{
-        type: 'object',
+        type: 'number',
         required: true,
-        name: 'folder',
-        nested: [{
-          type: 'number',
-          required: true,
-          name: 'id',
-        }, {
-          type: 'string',
-          required: true,
-          name: 'name',
-        }, {
-          type: 'string',
-          required: true,
-          name: 'path',
-        }, {
-          type: 'number',
-          required: true,
-          name: 'media_type',
-        }],
+        name: 'id',
+      }, {
+        type: 'string',
+        required: true,
+        name: 'name',
+      }, {
+        type: 'string',
+        required: true,
+        name: 'path',
+      }, {
+        type: 'number',
+        required: true,
+        name: 'media_type',
       }],
     }, {
       type: 'string',
@@ -44,8 +40,8 @@ export class ConfigController {
       name: 'tmdb_language',
     }]
   })
-  public patch(req: express.Request, res: express.Response) {
-    const { folders, tmdb_language } = req.body as express.Request['body'] & IConfig;
+  public patch(req: Request, res: Response) {
+    const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
 
     try {
       save_config({ folders, tmdb_language });

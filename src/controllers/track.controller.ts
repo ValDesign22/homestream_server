@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
+import { Request, Response } from 'express';
 import chalk from 'chalk';
-import { getVideoItemById } from '../utils/item.js';
+import { getVideoItemById } from '../utils/item';
 import ffmpeg from 'fluent-ffmpeg';
-import { extractSubtitle, getSubtitlePath, subtitleExists } from '../utils/subtitles.js';
+import { extractSubtitle, getSubtitlePath, subtitleExists } from '../utils/subtitles';
 
 @Controller('/track')
 export class TrackController {
@@ -23,7 +23,7 @@ export class TrackController {
       name: 'track_index',
     }],
   })
-  public get(req: express.Request, res: express.Response) {
+  public get(req: Request, res: Response) {
     const { id, extract_type, track_index } = req.query;
     if (!['audio', 'subtitle'].includes(extract_type as string)) return res.status(400).json({ message: 'Invalid extract_type' });
 

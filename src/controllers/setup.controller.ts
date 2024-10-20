@@ -1,26 +1,26 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
-import { load_config } from '../utils/config.js';
-import { EMediaType } from '../utils/types.js';
-import { explore_movies_folder, explore_tvshows_folder } from '../utils/explore.js';
-import { save_store } from '../utils/store.js';
+import { Request, Response } from 'express';
+import { load_config } from '../utils/config';
+import { EMediaType } from '../utils/types';
+import { explore_movies, explore_tv_shows } from '../utils/explore';
+import { save_store } from '../utils/store';
 
 @Controller('/setup')
 export class SetupController {
   @Get()
-  public async get(_: express.Request, res: express.Response) {
+  public async get(_: Request, res: Response) {
     const config = load_config();
 
     for (const folder of config.folders) {
       console.log(`Exploring ${folder.name} folder...`);
       switch (folder.media_type) {
         case EMediaType.Movies:
-          const movies = await explore_movies_folder(config, folder);
+          const movies = await explore_movies(config, folder);
           save_store(folder, movies);
           console.log(`Found ${movies.length} movies`);
           break;
         case EMediaType.TvShows:
-          const tvshows = await explore_tvshows_folder(config, folder);
+          const tvshows = await explore_tv_shows(config, folder);
           save_store(folder, tvshows);
           console.log(`Found ${tvshows.length} tv shows`);
           break

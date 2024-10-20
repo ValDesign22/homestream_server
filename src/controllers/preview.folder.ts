@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nuxum/core';
-import express from 'express';
-import { load_config } from '../utils/config.js';
-import { searchItemById } from '../utils/item.js';
-import { EMediaType } from '../utils/types.js';
-import { search_video } from '../utils/tmdb.js';
+import { Request, Response } from 'express';
+import { load_config } from '../utils/config';
+import { searchItemById } from '../utils/item';
+import { EMediaType } from '../utils/types';
+import { search_video } from '../utils/tmdb';
 
 @Controller('/preview')
 export class PreviewController {
@@ -14,7 +14,7 @@ export class PreviewController {
       name: 'id',
     }],
   })
-  public async get(req: express.Request, res: express.Response) {
+  public async get(req: Request, res: Response) {
     const { id } = req.query;
     const item = searchItemById(parseInt(id as string, 10));
     if (!item) return res.status(404).json({ message: 'Video not found' });

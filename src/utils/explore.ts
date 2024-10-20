@@ -1,11 +1,11 @@
 import { readdirSync } from 'node:fs';
-import { load_store } from './store.js';
-import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types.js';
-import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb.js';
+import { load_store } from './store';
+import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
+import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb';
 
 const videoExtensions = ['avi', 'mkv', 'mp4', 'webm', 'wmv'];
 
-const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<IMovie[]> => {
+const explore_movies = async (config: IConfig, folder: IFolder): Promise<IMovie[]> => {
   const stack = [folder.path];
 
   const movies: IMovie[] = [];
@@ -15,15 +15,11 @@ const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<
     const current_path = stack.pop();
     if (!current_path) continue;
 
-    const items = readdirSync(current_path, {
-      withFileTypes: true,
-    });
+    const items = readdirSync(current_path, { withFileTypes: true });
 
     for (const item of items) {
-      if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
-
       if (item.isDirectory()) {
-        stack.push(`${current_path}/${item.name}`);
+        if (item.name !== '.' && item.name !== '..') stack.push(`${current_path}/${item.name}`);
         continue;
       }
 
@@ -53,93 +49,21 @@ const explore_movies_folder = async (config: IConfig, folder: IFolder): Promise<
   return movies;
 };
 
-const explore_tvshows_folder = async (config: IConfig, folder: IFolder): Promise<ITvShow[]> => {
+const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvShow[]> => {
   const stack = [folder.path];
 
   const tvshows: ITvShow[] = [];
   const existing_tvshows = load_store(folder) as ITvShow[];
+
+  const cache = new Map<string, number>();
 
   while (stack.length > 0) {
     const current_path = stack.pop();
     if (!current_path) continue;
 
     const items = readdirSync(current_path, {
-      withFileTypes: true,
+      withFileTypes: true
     });
-
-    for (const item of items) {
-      if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
-
-      if (item.isFile()) continue;
-
-      let date = null;
-      const date_match = item.name.match(/\d{4}/);
-      if (date_match && date_match[0].length === 4 && date_match[0].length !== item.name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
-      const title = date ? item.name.split(' ').slice(0, -1).join(' ') : item.name;
-
-      const existing_tvshow = existing_tvshows.find((t) => t.path === `${current_path}/${item.name}`);
-      const tvshow = existing_tvshow || await search_tvshow(title, date, config);
-      if (tvshow) {
-        const seasons = await explore_tvshow_seasons(config, folder, tvshow, `${current_path}/${item.name}`);
-        tvshows.push({
-          ...tvshow,
-          seasons,
-          path: `${current_path}/${item.name}`,
-        });
-      }
-    }
-  }
-
-  return tvshows;
-};
-
-const explore_tvshow_seasons = async (config: IConfig, folder: IFolder, tvshow: ITvShow, path: string): Promise<ITvShowSeason[]> => {
-  const stack = [path];
-
-  const seasons: ITvShowSeason[] = [];
-
-  while (stack.length > 0) {
-    const current_path = stack.pop();
-    if (!current_path) continue;
-
-    const items = readdirSync(current_path, { withFileTypes: true });
-
-    for (const item of items) {
-      if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
-
-      if (item.isFile()) continue;
-
-      const season_match = item.name.match(/\d+/g);
-      if (!season_match) continue;
-      const season_number = season_match[0];
-
-      const existing_season = tvshow.seasons.find((s) => s.path === `${current_path}/${item.name}`);
-      const season = existing_season || await search_tvshow_season(tvshow.id, parseInt(season_number), config);
-      if (season) {
-        const episodes = await explore_tvshow_episodes(config, folder, tvshow, season, `${current_path}/${item.name}`);
-        seasons.push({
-          ...season,
-          episodes,
-          path: `${current_path}/${item.name}`,
-        });
-      }
-    }
-  }
-
-  return seasons;
-};
-
-const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow: ITvShow, season: ITvShowSeason, path: string): Promise<ITvShowEpisode[]> => {
-  const stack = [path];
-
-  const episodes: ITvShowEpisode[] = [];
-  const existing_tvshows = load_store(folder) as ITvShow[];
-
-  while (stack.length > 0) {
-    const current_path = stack.pop();
-    if (!current_path) continue;
-
-    const items = readdirSync(current_path, { withFileTypes: true });
 
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;
@@ -151,40 +75,55 @@ const explore_tvshow_episodes = async (config: IConfig, folder: IFolder, tvshow:
 
       if (!videoExtensions.includes(item.name.split('.').pop() as string)) continue;
 
-      const existing_tvshow = existing_tvshows.find((t) => t.path === tvshow.path);
-      if (existing_tvshow) {
-        const existing_season = existing_tvshow.seasons.find((s) => s.path === season.path);
-        if (existing_season) {
-          const existing_episode = existing_season.episodes.find((e) => e.path === `${current_path}/${item.name}`);
-          if (existing_episode) {
-            episodes.push(existing_episode);
-            continue;
-          }
-        }
+      const filename = item.name;
+      const episode_match = filename.match(/S\d{2} E\d{2}/);
+      if (!episode_match) continue;
+      const title = filename.split(episode_match[0]).shift()?.trim();
+      if (!title) continue;
+
+      let tvshow_id = cache.get(title);
+      if (!tvshow_id) {
+        const tvshow = await search_tvshow(title, null, config);
+        if (!tvshow) continue;
+        cache.set(title, tvshow.id);
+        tvshow_id = tvshow.id;
       }
 
-      const episode_number = (() => {
-        const firstSplit = item.name.split('.').shift();
-        if (!firstSplit) return null;
-        const lastWord = firstSplit.trim().split(/\s+/).pop();
-        if (!lastWord) return null;
-        const epidosePart = lastWord.replace('E', '');
-        if (!epidosePart) return null;
-        if ([...epidosePart].every((char) => !isNaN(parseInt(char)))) return parseInt(epidosePart);
-        return null;
-      })();
+      const existing_tvshow = existing_tvshows.find((t) => t.id === tvshow_id);
+      if (existing_tvshow && !tvshows.includes(existing_tvshow)) tvshows.push(existing_tvshow);
+      const tvshow = existing_tvshow || tvshows.find((t) => t.id === tvshow_id);
+      if (!tvshow) continue;
 
-      if (!episode_number) continue;
+      const season_number = parseInt(episode_match[0].slice(1, 3));
+      if (isNaN(season_number)) continue;
 
-      const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
-      if (episode) episodes.push({
-        ...episode,
+      let tvshow_season = tvshow.seasons.find((s) => s.season_number === season_number);
+      if (!tvshow_season) {
+        const season = await search_tvshow_season(tvshow_id, season_number, config);
+        if (!season) continue;
+        tvshow.seasons.push(season);
+        tvshow_season = season;
+      } else tvshow.seasons.push(tvshow_season);
+      if (!tvshow_season) continue;
+
+      const episode_number = parseInt(episode_match[0].slice(-2));
+      if (isNaN(episode_number)) continue;
+
+      const existing_episode = tvshow_season.episodes.find((e) => e.episode_number === episode_number);
+      if (existing_episode) continue;
+
+      const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, config);
+      if (!episode_data) continue;
+      tvshow_season.episodes.push({
+        ...episode_data,
         path: `${current_path}/${item.name}`,
       });
+
+      if (!tvshows.includes(tvshow)) tvshows.push(tvshow);
     }
   }
 
-  return episodes;
-};
+  return tvshows;
+}
 
-export { explore_movies_folder, explore_tvshows_folder };
+export { explore_movies, explore_tv_shows };
