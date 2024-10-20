@@ -1,7 +1,7 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'path';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 
 interface IFolderItem {
   id: number;
@@ -10,14 +10,12 @@ interface IFolderItem {
   children?: IFolderItem[];
 }
 
-class FoldersController extends Controller {
-  @Route({
-    path: '/folders',
-    method: HttpMethod.GET,
-  })
+@Controller('/folders')
+export class FoldersController {
+  @Get()
   public get(_: express.Request, res: express.Response) {
     const FILES_FOLDER = process.env.FILES_FOLDER;
-    if (!FILES_FOLDER) return this.sendError(res, 'Files folder not set');
+    if (!FILES_FOLDER) return res.status(500).json({ message: 'Files folder not set' });
 
     const stack: IFolderItem[] = [{
       id: 0,
@@ -53,7 +51,7 @@ class FoldersController extends Controller {
       if (current.children && current.children.length === 0) delete current.children;
     }
 
-    return this.sendResponse(res, root.children);
+    return res.status(200).json(root.children);
   }
 
   private getLastId(root: IFolderItem): number {
@@ -71,5 +69,3 @@ class FoldersController extends Controller {
     return lastId;
   }
 }
-
-export const foldersController = new FoldersController();

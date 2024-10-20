@@ -1,11 +1,10 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
-import { Controller, HttpMethod, Route } from "../utils/route.js";
 import { search } from '../utils/tmdb.js';
 
-class SearchController extends Controller {
-  @Route({
-    path: '/search',
-    method: HttpMethod.GET,
+@Controller('/search')
+export class SearchController {
+  @Get({
     query: [{
       type: 'string',
       required: true,
@@ -21,8 +20,6 @@ class SearchController extends Controller {
     const { query, type } = req.query;
 
     const results = await search(query as string, type as string);
-    return this.sendResponse(res, results);
+    return res.status(200).json(results);
   }
 }
-
-export const searchController = new SearchController();

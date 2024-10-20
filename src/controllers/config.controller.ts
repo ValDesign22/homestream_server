@@ -1,30 +1,26 @@
+import { Controller, Get, Patch } from '@nuxum/core';
 import express from 'express';
 import { load_config, save_config } from '../utils/config.js';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 import { IConfig } from '../utils/types.js';
 
-class ConfigController extends Controller {
-  @Route({
-    path: '/config',
-    method: HttpMethod.GET,
-  })
+@Controller('/config')
+export class ConfigController {
+  @Get()
   public get(_: express.Request, res: express.Response) {
     const config = load_config();
-    return this.sendResponse(res, config);
+    return res.status(200).json(config);
   }
 
-  @Route({
-    path: '/config',
-    method: HttpMethod.PATCH,
+  @Patch({
     body: [{
       type: 'array',
       required: true,
       name: 'folders',
-      values: [{
+      nested: [{
         type: 'object',
         required: true,
         name: 'folder',
-        keys: [{
+        nested: [{
           type: 'number',
           required: true,
           name: 'id',
@@ -46,19 +42,17 @@ class ConfigController extends Controller {
       type: 'string',
       required: true,
       name: 'tmdb_language',
-    }],
+    }]
   })
   public patch(req: express.Request, res: express.Response) {
-    const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
+    const { folders, tmdb_language } = req.body as express.Request['body'] & IConfig;
 
     try {
       save_config({ folders, tmdb_language });
-      return this.sendResponse(res, { message: 'Config updated successfully' });
+      return res.status(200).json({ message: 'Config updated successfully' });
     } catch (error) {
       console.error(error);
-      return this.sendError(res, 'Failed to update config', 500);
+      return res.status(500).json({ message: 'Failed to update config' });
     }
   }
 }
-
-export const configController = new ConfigController();

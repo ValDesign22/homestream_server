@@ -1,14 +1,13 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
 import ffmpeg from 'fluent-ffmpeg';
 import { getVideoItemById } from '../utils/item.js';
 import { ITrack, ITracks } from '../utils/types.js';
 import { extractSubtitles } from '../utils/subtitles.js';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 
-class TracksController extends Controller {
-  @Route({
-    path: '/tracks',
-    method: HttpMethod.GET,
+@Controller('/tracks')
+export class TracksController {
+  @Get({
     query: [{
       type: 'number',
       required: true,
@@ -19,16 +18,16 @@ class TracksController extends Controller {
     const { id } = req.query;
 
     const videoItem = getVideoItemById(parseInt(id as string, 10));
-    if (!videoItem) return this.sendError(res, 'Video not found', 404);
+    if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;
-    if (!videoPath) return this.sendError(res, 'Video has no path', 404);
+    if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
     try {
       ffmpeg.ffprobe(videoPath, (error, metadata) => {
         if (error) {
           console.error(error);
-          return this.sendError(res, 'Error extracting video metadata', 500);
+          return res.status(500).json({ message: 'Error extracting video metadata' });
         }
 
         const tracks: ITracks = {
@@ -57,17 +56,14 @@ class TracksController extends Controller {
             url: `/track?id=${id}&extract_type=${stream.codec_type}&track_index=${tracks.subtitles.length}`,
           });
         });
-
-        this.sendResponse(res, {
+        res.status(200).json({
           message: 'Available tracks',
           tracks,
         });
       });
     } catch (error) {
       console.error(error);
-      this.sendError(res, 'Internal server error', 500);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 }
-
-export const tracksController = new TracksController();

@@ -1,15 +1,14 @@
+import { Controller, Get, Patch } from '@nuxum/core';
 import express from 'express';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 import { EMediaType, IGenre, IMovie, ITvShow, ITvShowEpisode } from '../utils/types.js';
 import { getVideoItemById, searchItemById } from '../utils/item.js';
-import { create_request, fetch_images } from '../utils/tmdb.js';
 import { load_config } from '../utils/config.js';
+import { create_request, fetch_images } from '../utils/tmdb.js';
 import { load_store, save_store } from '../utils/store.js';
 
-class DetailsController extends Controller {
-  @Route({
-    path: '/details',
-    method: HttpMethod.GET,
+@Controller('/details')
+export class DetailsController {
+  @Get({
     query: [{
       type: 'number',
       required: true,
@@ -21,14 +20,12 @@ class DetailsController extends Controller {
     let item: IMovie | ITvShow | ITvShowEpisode | null = searchItemById(parseInt(id as string, 10));
     if (!item) {
       item = getVideoItemById(parseInt(id as string, 10));
-      if (!item) return this.sendError(res, 'Video not found', 404);
+      if (!item) return res.status(404).json({ message: 'Video not found' });
     }
-    return this.sendResponse(res, item);
+    return res.status(200).json(item);
   }
 
-  @Route({
-    path: '/details',
-    method: HttpMethod.PATCH,
+  @Patch({
     query: [{
       type: 'number',
       required: true,
@@ -46,15 +43,15 @@ class DetailsController extends Controller {
   public async patch(req: express.Request, res: express.Response) {
     const { id, new_id, type } = req.query;
     const item: IMovie | ITvShow | null = searchItemById(parseInt(id as string, 10));
-    if (!item || !item.path) return this.sendError(res, 'Item not found', 404);
+    if (!item || !item.path) return res.status(404).json({ message: 'Item not found' });
 
-    if (parseInt(type as string, 10) === EMediaType.TvShows) return this.sendError(res, 'Cannot patch Tv Shows', 400);
+    if (parseInt(type as string, 10) === EMediaType.TvShows) return res.status(400).json({ message: 'Cannot patch Tv Shows' });
 
     const config = load_config();
     const { tmdb_language, folders } = config;
 
     const response = await create_request(`https://api.themoviedb.org/3/movie/${new_id}?language=${tmdb_language}&append_to_response=release_dates`);
-    if (!response) return this.sendError(res, 'Movie not found', 404);
+    if (!response) return res.status(404).json({ message: 'Movie not found' });
 
     const genres: IGenre[] = response.genres ? response.genres.map((genre: any) => {
       return {
@@ -81,15 +78,13 @@ class DetailsController extends Controller {
     };
 
     const folder = folders.find((folder) => item.path!.startsWith(folder.path));
-    if (!folder) return this.sendError(res, 'Folder not found', 404);
+    if (!folder) return res.status(404).json({ message: 'Folder not found' });
     const store = load_store(folder) as IMovie[];
     const index = store.findIndex((movie) => movie.id === parseInt(id as string, 10));
-    if (index === -1) return this.sendError(res, 'Item not found', 404);
+    if (index === -1) return res.status(404).json({ message: 'Item not found' });
     store[index] = newItem;
     save_store(folder, store);
 
-    return this.sendResponse(res, newItem);
+    return res.status(200).json(newItem);
   }
 }
-
-export const detailsController = new DetailsController();

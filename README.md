@@ -1,6 +1,9 @@
 # HomeStream Server
 HomeStream Server is the backend for the [HomeStream](https://github.com/ValDesign22/homestream_client) project.
+
 It lets you stream your media files seamlessly across devices on your local network (or even remotely).
+
+HomeStream is built with [Nuxum](https://github.com/nuxum/nuxum), a simple and lightweight express server framework. Both projects are open-source and free to use.
 
 ## Features
 - Stream media files to any device
@@ -9,6 +12,7 @@ It lets you stream your media files seamlessly across devices on your local netw
 
 ## Prerequisites
 - [Node.js](https://nodejs.org/en/download/) (v18 or newer)
+- [FFmpeg](https://ffmpeg.org/download.html) (required for video tracks and subtitles)
 
 ## Installation
 ### From source
@@ -62,3 +66,7 @@ WATCH_DIR=SERVER_WATCH_DIR # The directory the server will watch for new files
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+[MIT](#LICENSE)
+```

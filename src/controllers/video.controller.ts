@@ -1,12 +1,11 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
 import { createReadStream, statSync } from 'node:fs';
 import { getVideoItemById } from '../utils/item.js';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 
-class VideoController extends Controller {
-  @Route({
-    path: '/video',
-    method: HttpMethod.GET,
+@Controller('/video')
+export class VideoController {
+  @Get({
     query: [{
       type: 'number',
       required: true,
@@ -17,18 +16,18 @@ class VideoController extends Controller {
     const { id } = req.query;
 
     const videoItem = getVideoItemById(parseInt(id as string, 10));
-    if (!videoItem) return this.sendError(res, 'Video not found', 404);
+    if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;
-    if (!videoPath) return this.sendError(res, 'Video has no path', 404);
+    if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
     try {
       const stat = statSync(videoPath);
 
-      if (!stat.isFile()) return this.sendError(res, 'Video not found', 404);
+      if (!stat.isFile()) return res.status(404).json({ message: 'Video not found' });
 
       const range = req.headers.range;
-      if (!range) return this.sendError(res, 'Range header is required', 400);
+      if (!range) return res.status(400).json({ message: 'Range header is required' });
 
       const positions = range.replace(/bytes=/, '').split('-');
       const start = parseInt(positions[0], 10);
@@ -58,9 +57,7 @@ class VideoController extends Controller {
       });
     } catch (error) {
       console.error(error);
-      this.sendError(res, 'Internal server error', 500);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 }
-
-export const videoController = new VideoController();

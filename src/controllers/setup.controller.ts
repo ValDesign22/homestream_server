@@ -1,15 +1,13 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
 import { load_config } from '../utils/config.js';
 import { EMediaType } from '../utils/types.js';
 import { explore_movies_folder, explore_tvshows_folder } from '../utils/explore.js';
 import { save_store } from '../utils/store.js';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 
-class SetupController extends Controller {
-  @Route({
-    path: '/setup',
-    method: HttpMethod.GET,
-  })
+@Controller('/setup')
+export class SetupController {
+  @Get()
   public async get(_: express.Request, res: express.Response) {
     const config = load_config();
 
@@ -29,8 +27,6 @@ class SetupController extends Controller {
       }
     }
 
-    return this.sendResponse(res, { message: 'Setup completed successfully' });
+    return res.status(200).json({ message: 'Setup completed successfully' });
   }
 }
-
-export const setupController = new SetupController();

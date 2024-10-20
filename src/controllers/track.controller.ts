@@ -1,14 +1,13 @@
+import { Controller, Get } from '@nuxum/core';
 import express from 'express';
 import chalk from 'chalk';
 import { getVideoItemById } from '../utils/item.js';
 import ffmpeg from 'fluent-ffmpeg';
 import { extractSubtitle, getSubtitlePath, subtitleExists } from '../utils/subtitles.js';
-import { Controller, HttpMethod, Route } from '../utils/route.js';
 
-class TrackController extends Controller {
-  @Route({
-    path: '/track',
-    method: HttpMethod.GET,
+@Controller('/track')
+export class TrackController {
+  @Get({
     query: [{
       type: 'number',
       required: true,
@@ -26,29 +25,29 @@ class TrackController extends Controller {
   })
   public get(req: express.Request, res: express.Response) {
     const { id, extract_type, track_index } = req.query;
-    if (!['audio', 'subtitle'].includes(extract_type as string)) return this.sendError(res, 'Invalid extract_type', 400);
+    if (!['audio', 'subtitle'].includes(extract_type as string)) return res.status(400).json({ message: 'Invalid extract_type' });
 
     const videoItem = getVideoItemById(parseInt(id as string, 10));
-    if (!videoItem) return this.sendError(res, 'Video not found', 404);
+    if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;
-    if (!videoPath) return this.sendError(res, 'Video has no path', 404);
+    if (!videoPath) return res.status(404).json({ message: 'Video has no path' });
 
     try {
       ffmpeg.ffprobe(videoPath, async (error, metadata) => {
         if (error) {
           console.error(error);
-          return this.sendError(res, 'Error extracting video metadata', 500);
+          return res.status(500).json({ message: 'Error extracting video metadata' });
         }
 
         const streams = metadata.streams.filter((stream) => stream.codec_type === extract_type);
-        if (!streams || streams.length === 0) return this.sendError(res, 'No extract data found', 404);
+        if (!streams || streams.length === 0) return res.status(404).json({ message: 'No extract data found' });
 
         const streamIndex = parseInt(track_index as string, 10);
-        if (isNaN(streamIndex) || streamIndex < 0) return this.sendError(res, 'Invalid track_index', 400);
+        if (isNaN(streamIndex) || streamIndex < 0) return res.status(400).json({ message: 'Invalid track_index' });
 
         const stream = streams[streamIndex];
-        if (!stream || !stream.codec_name) return this.sendError(res, 'Track not found', 404);
+        if (!stream || !stream.codec_name) return res.status(404).json({ message: 'Track not found' });
 
         if (extract_type === 'audio') {
           ffmpeg(videoPath)
@@ -59,7 +58,7 @@ class TrackController extends Controller {
             .outputOptions([`-map 0:a:${streamIndex}?`])
             .on('error', (error) => {
               console.error(error);
-              if (!res.headersSent) this.sendError(res, 'Error extracting audio', 500);
+              if (!res.headersSent) res.status(500).json({ message: 'Error extracting audio' });
             })
             .pipe(res.writeHead(200, { 'Content-Type': 'audio/mpeg' }), { end: true });
         } else if (extract_type === 'subtitle') {
@@ -68,15 +67,13 @@ class TrackController extends Controller {
               .then((destination) => console.log(`[${chalk.green('TRACKS')}] Extracted subtitle ${streamIndex} for ${videoItem.id} at ${destination}`))
               .catch((error) => console.error(error));
           const subtitlesPath = getSubtitlePath(videoItem, streamIndex, stream.codec_name);
-          if (!subtitlesPath) return this.sendError(res, 'Cannot find any subtitles for this video', 404);
+          if (!subtitlesPath) return res.status(404).json({ message: 'Cannot find any subtitles for this video' });
           res.sendFile(subtitlesPath);
         }
       });
     } catch (error) {
       console.error(error);
-      this.sendError(res, 'Internal server error', 500);
+      return res.status(500).json({ message: 'Internal server error' });
     }
   }
 }
-
-export const trackController = new TrackController();
