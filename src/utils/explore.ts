@@ -61,9 +61,7 @@ const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvSh
     const current_path = stack.pop();
     if (!current_path) continue;
 
-    const items = readdirSync(current_path, {
-      withFileTypes: true
-    });
+    const items = readdirSync(current_path, { withFileTypes: true });
 
     for (const item of items) {
       if (item.isDirectory() && item.name === '.' || item.name === '..') continue;

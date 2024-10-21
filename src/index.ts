@@ -9,7 +9,7 @@ import { AppModule } from './modules/app.module';
 import { load_config } from './utils/config';
 import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './utils/types';
 import { load_store, save_store } from './utils/store';
-import { search_movie, search_tvshow_episode } from './utils/tmdb';
+import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 import { deleteSubtitles } from './utils/subtitles';
 
@@ -59,9 +59,9 @@ async function bootstrap() {
             let date = null;
             const date_match = file_name.match(/\d{4}/);
             if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
-            const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
+            const movie_title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
-            const movie = await search_movie(title, date, config);
+            const movie = await search_movie(movie_title, date, config);
 
             if (movie) currentStore.push({
               ...movie,
@@ -72,36 +72,60 @@ async function bootstrap() {
             break;
           case EMediaType.TvShows:
             const tvshows = load_store(folder) as ITvShow[];
+
+            const filename = path.split('/').pop() as string;
+            const episode_match = filename.match(/S\d{2} E\d{2}/);
+            if (!episode_match) continue;
+            const tvshow_title = filename.split(episode_match[0]).shift()?.trim();
+            if (!tvshow_title) continue;
+
+            let tvshow_id = null;
             for (const tvshow of tvshows) {
-              if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
-              for (const season of tvshow.seasons) {
-                if (!season.path || !path.startsWith(season.path)) continue;
-                const existing_episode = season.episodes.find((episode) => episode.path === path);
-                if (existing_episode) return;
-
-                const file = path.split('/').pop() as string;
-                const file_name = file.split('.').slice(0, -1).join('.');
-
-                const episode_number = (() => {
-                  const firstSplit = file_name.split('.').shift();
-                  if (!firstSplit) return null;
-                  const lastWord = firstSplit.trim().split(/\s+/).pop();
-                  if (!lastWord) return null;
-                  const epidosePart = lastWord.replace('E', '');
-                  if (!epidosePart) return null;
-                  if ([...epidosePart].every((char) => !isNaN(parseInt(char)))) return parseInt(epidosePart);
-                  return null;
-                })();
-
-                if (!episode_number) continue;
-
-                const episode = await search_tvshow_episode(tvshow.id, season.season_number, episode_number, config);
-                if (episode) season.episodes.push({
-                  ...episode,
-                  path,
-                });
+              if (tvshow.title === tvshow_title) {
+                tvshow_id = tvshow.id;
+                break;
               }
             }
+            if (!tvshow_id) {
+              const tvshow = await search_tvshow(tvshow_title, null, config);
+              if (!tvshow) continue;
+              const existing_tvshow = tvshows.find((t) => t.id === tvshow.id);
+              if (existing_tvshow) tvshow_id = existing_tvshow.id;
+              else {
+                tvshow_id = tvshow.id;
+                tvshows.push(tvshow);
+              }
+            }
+
+            const tvshow = tvshows.find((t) => t.id === tvshow_id);
+            if (!tvshow) continue;
+
+            const season_number = parseInt(episode_match[0].slice(1, 3));
+            if (isNaN(season_number)) continue;
+
+            let tvshow_season = tvshow.seasons.find((s) => s.season_number === season_number);
+            if (!tvshow_season) {
+              const season = await search_tvshow_season(tvshow_id, season_number, config);
+              if (!season) continue;
+              tvshow.seasons.push(season);
+              tvshow_season = season;
+            } else tvshow.seasons.push(tvshow_season);
+            if (!tvshow_season) continue;
+
+            const episode_number = parseInt(episode_match[0].slice(-2));
+            if (isNaN(episode_number)) continue;
+
+            const existing_episode = tvshow_season.episodes.find((e) => e.episode_number === episode_number);
+            if (existing_episode) continue;
+
+            const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, config);
+            if (!episode_data) continue;
+            tvshow_season.episodes.push({
+              ...episode_data,
+              path,
+            });
+
+            if (!tvshows.includes(tvshow)) tvshows.push(tvshow);
 
             save_store(folder, tvshows);
             break;
@@ -124,20 +148,21 @@ async function bootstrap() {
             break;
           case EMediaType.TvShows:
             const tvshows = load_store(folder) as ITvShow[];
-            for (const tvshow of tvshows) {
-              if (!tvshow.path || !path.startsWith(tvshow.path)) continue;
-              for (const season of tvshow.seasons) {
-                if (!season.path || !path.startsWith(season.path)) continue;
-                const episode = season.episodes.find((episode) => episode.path === path) as ITvShowEpisode;
-                if (!episode) continue;
-                deleteSubtitles(episode);
-                const newEpisodes = season.episodes.filter((episode) => episode.path !== path);
-                season.episodes = newEpisodes;
+            const tvshow = tvshows.find((tvshow) => tvshow.seasons.some((season) => season.episodes.some((episode) => episode.path === path)));
+            if (!tvshow) return;
+            const newTvshows = tvshows.map((t) => {
+              if (t.id === tvshow.id) {
+                const newTvshow = { ...t };
+                newTvshow.seasons = newTvshow.seasons.map((s) => {
+                  const newSeason = { ...s };
+                  newSeason.episodes = newSeason.episodes.filter((e) => e.path !== path);
+                  return newSeason;
+                });
+                return newTvshow;
               }
-            }
-
-            save_store(folder, tvshows);
-            break
+              return t;
+            });
+            save_store(folder, newTvshows);
         }
         const media_type = folder.media_type === EMediaType.Movies ? 'Movie' : 'TvShow';
         console.log(`${media_type} removed:`, path);

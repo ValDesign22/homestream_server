@@ -43,7 +43,7 @@ export class DetailsController {
   public async patch(req: Request, res: Response) {
     const { id, new_id, type } = req.query;
     const item: IMovie | ITvShow | null = searchItemById(parseInt(id as string, 10));
-    if (!item || !item.path) return res.status(404).json({ message: 'Item not found' });
+    if (!item || !item.id) return res.status(404).json({ message: 'Item not found' });
 
     if (parseInt(type as string, 10) === EMediaType.TvShows) return res.status(400).json({ message: 'Cannot patch Tv Shows' });
 
@@ -74,10 +74,10 @@ export class DetailsController {
       release_date: response.release_date,
       runtime: response.runtime,
       genres,
-      path: item.path,
+      path: (item as IMovie).path,
     };
 
-    const folder = folders.find((folder) => item.path!.startsWith(folder.path));
+    const folder = folders.find((folder) => (item as IMovie).path!.startsWith(folder.path));
     if (!folder) return res.status(404).json({ message: 'Folder not found' });
     const store = load_store(folder) as IMovie[];
     const index = store.findIndex((movie) => movie.id === parseInt(id as string, 10));

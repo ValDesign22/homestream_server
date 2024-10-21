@@ -195,7 +195,6 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
     logo_path: images.logo_path,
     genres,
     seasons: [],
-    path: null,
   };
 };
 
@@ -214,7 +213,6 @@ const search_tvshow_season = async (tvshow_id: number, season_number: number, co
     overview: season_response.overview,
     episodes: [],
     poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
-    path: null,
   };
 };
 

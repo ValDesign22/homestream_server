@@ -35,7 +35,6 @@ export interface ITvShow {
   logo_path: string | null,
   genres: IGenre[],
   seasons: ITvShowSeason[],
-  path: string | null,
 }
 
 export interface ITvShowSeason {
@@ -45,7 +44,6 @@ export interface ITvShowSeason {
   overview: string,
   episodes: ITvShowEpisode[],
   poster_path: string | null,
-  path: string | null,
 }
 
 export interface ITvShowEpisode {
