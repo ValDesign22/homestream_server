@@ -1,7 +1,7 @@
 import { Controller, Get, Patch } from '@nuxum/core';
 import { Request, Response } from 'express';
-import { EMediaType, IGenre, IMovie, ITvShow, ITvShowEpisode } from '../utils/types';
-import { getVideoItemById, searchItemById } from '../utils/item';
+import { EMediaType, IGenre, IMovie, ITvShow } from '../utils/types';
+import { searchItemById } from '../utils/item';
 import { load_config } from '../utils/config';
 import { create_request, fetch_images } from '../utils/tmdb';
 import { load_store, save_store } from '../utils/store';
@@ -17,9 +17,9 @@ export class DetailsController {
   })
   public get(req: Request, res: Response) {
     const { id } = req.query;
-    let item: IMovie | ITvShow | ITvShowEpisode | null = searchItemById(parseInt(id as string, 10));
+    let item = searchItemById(parseInt(id as string, 10));
     if (!item) {
-      item = getVideoItemById(parseInt(id as string, 10));
+      item = searchItemById(parseInt(id as string, 10), true);
       if (!item) return res.status(404).json({ message: 'Video not found' });
     }
     return res.status(200).json(item);
@@ -42,13 +42,12 @@ export class DetailsController {
   })
   public async patch(req: Request, res: Response) {
     const { id, new_id, type } = req.query;
-    const item: IMovie | ITvShow | null = searchItemById(parseInt(id as string, 10));
+    const item = searchItemById(parseInt(id as string, 10)) as IMovie | ITvShow | null;
     if (!item || !item.id) return res.status(404).json({ message: 'Item not found' });
 
     if (parseInt(type as string, 10) === EMediaType.TvShows) return res.status(400).json({ message: 'Cannot patch Tv Shows' });
 
-    const config = load_config();
-    const { tmdb_language, folders } = config;
+    const { tmdb_language, folders } = load_config();
 
     const response = await create_request(`https://api.themoviedb.org/3/movie/${new_id}?language=${tmdb_language}&append_to_response=release_dates`);
     if (!response) return res.status(404).json({ message: 'Movie not found' });
@@ -60,9 +59,14 @@ export class DetailsController {
       };
     }) : [];
 
-    const images = await fetch_images(parseInt(new_id as string, 10), EMediaType.Movies, config);
+    const images = await fetch_images(parseInt(new_id as string, 10), EMediaType.Movies, tmdb_language);
 
-    const newItem: IMovie = {
+    const folder = folders.find((folder) => (item as IMovie).path!.startsWith(folder.path));
+    if (!folder) return res.status(404).json({ message: 'Folder not found' });
+    const store = load_store(folder) as IMovie[];
+    const index = store.findIndex((movie) => movie.id === parseInt(id as string, 10));
+    if (index === -1) return res.status(404).json({ message: 'Item not found' });
+    store[index] = {
       id: response.id,
       collection_id: response.belongs_to_collection ? response.belongs_to_collection.id : null,
       title: response.title,
@@ -76,15 +80,8 @@ export class DetailsController {
       genres,
       path: (item as IMovie).path,
     };
-
-    const folder = folders.find((folder) => (item as IMovie).path!.startsWith(folder.path));
-    if (!folder) return res.status(404).json({ message: 'Folder not found' });
-    const store = load_store(folder) as IMovie[];
-    const index = store.findIndex((movie) => movie.id === parseInt(id as string, 10));
-    if (index === -1) return res.status(404).json({ message: 'Item not found' });
-    store[index] = newItem;
     save_store(folder, store);
 
-    return res.status(200).json(newItem);
+    return res.status(200).json(store[index]);
   }
 }

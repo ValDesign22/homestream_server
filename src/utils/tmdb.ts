@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { distance } from 'fastest-levenshtein';
-import { EMediaType, IConfig, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
+import { EMediaType, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
 import { load_config } from './config';
 
 const create_request = async (url: string) => {
@@ -24,7 +24,7 @@ const find_image_path = (images: any[], language: string | null): string | null 
   return null;
 };
 
-const fetch_images = async (id: number, media_type: EMediaType, config: IConfig): Promise<IImagesResponse> => {
+const fetch_images = async (id: number, media_type: EMediaType, language: string): Promise<IImagesResponse> => {
   let base_url;
   switch (media_type) {
     case EMediaType.Movies:
@@ -37,12 +37,10 @@ const fetch_images = async (id: number, media_type: EMediaType, config: IConfig)
 
   const images = await create_request(`${base_url}/${id}/images`);
 
-  const { tmdb_language } = config;
-
   return {
     backdrop_path: find_image_path(images.backdrops, null),
-    logo_path: find_image_path(images.logos, tmdb_language) || find_image_path(images.logos, 'en') || find_image_path(images.logos, null),
-    poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
+    logo_path: find_image_path(images.logos, language) || find_image_path(images.logos, 'en') || find_image_path(images.logos, null),
+    poster_path: find_image_path(images.posters, language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
   };
 };
 
@@ -107,10 +105,8 @@ const search = async (title: string, type: string): Promise<IMovie[] | ITvShow[]
   return results;
 }
 
-const search_movie = async (title: string, date: string | null, config: IConfig): Promise<IMovie | null> => {
-  const { tmdb_language } = config;
-
-  const search_results = (await create_request(`https://api.themoviedb.org/3/search/movie?query=${title}&language=${tmdb_language}${date ? `&year=${date}` : ''}`)).results;
+const search_movie = async (title: string, date: string | null, language: string): Promise<IMovie | null> => {
+  const search_results = (await create_request(`https://api.themoviedb.org/3/search/movie?query=${title}&language=${language}${date ? `&year=${date}` : ''}`)).results;
   if (!search_results || search_results.length === 0) return null;
 
   let best_match = null;
@@ -126,7 +122,7 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
 
   const movie_id = best_match.id;
 
-  const movie_response = await create_request(`https://api.themoviedb.org/3/movie/${movie_id}?language=${tmdb_language}&append_to_response=release_dates`);
+  const movie_response = await create_request(`https://api.themoviedb.org/3/movie/${movie_id}?language=${language}&append_to_response=release_dates`);
   if (!movie_response) return null;
 
   const genres: IGenre[] = movie_response.genres ? movie_response.genres.map((genre: any) => {
@@ -136,7 +132,7 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
     };
   }) : [];
 
-  const images = await fetch_images(movie_id, EMediaType.Movies, config);
+  const images = await fetch_images(movie_id, EMediaType.Movies, language);
 
   return {
     id: movie_response.id,
@@ -154,10 +150,8 @@ const search_movie = async (title: string, date: string | null, config: IConfig)
   };
 };
 
-const search_tvshow = async (title: string, date: string | null, config: IConfig): Promise<ITvShow | null> => {
-  const { tmdb_language } = config;
-
-  const search_results = (await create_request(`https://api.themoviedb.org/3/search/tv?query=${title}&language=${tmdb_language}${date ? `&first_air_date_year=${date}` : ''}`)).results;
+const search_tvshow = async (title: string, date: string | null, language: string): Promise<ITvShow | null> => {
+  const search_results = (await create_request(`https://api.themoviedb.org/3/search/tv?query=${title}&language=${language}${date ? `&first_air_date_year=${date}` : ''}`)).results;
   if (!search_results || search_results.length === 0) return null;
 
   let best_match = null;
@@ -173,7 +167,7 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
 
   const tvshow_id = best_match.id;
 
-  const tvshow_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}?language=${tmdb_language}&append_to_response=release_dates`);
+  const tvshow_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}?language=${language}&append_to_response=release_dates`);
   if (!tvshow_response) return null;
 
   const genres: IGenre[] = tvshow_response.genres ? tvshow_response.genres.map((genre: any) => {
@@ -183,7 +177,7 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
     };
   }) : [];
 
-  const images = await fetch_images(tvshow_id, EMediaType.TvShows, config);
+  const images = await fetch_images(tvshow_id, EMediaType.TvShows, language);
 
   return {
     id: tvshow_response.id,
@@ -198,10 +192,8 @@ const search_tvshow = async (title: string, date: string | null, config: IConfig
   };
 };
 
-const search_tvshow_season = async (tvshow_id: number, season_number: number, config: IConfig): Promise<ITvShowSeason | null> => {
-  const { tmdb_language } = config;
-
-  const season_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}?language=${tmdb_language}`);
+const search_tvshow_season = async (tvshow_id: number, season_number: number, language: string): Promise<ITvShowSeason | null> => {
+  const season_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}?language=${language}`);
   if (!season_response) return null;
 
   const images = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/images`);
@@ -212,14 +204,12 @@ const search_tvshow_season = async (tvshow_id: number, season_number: number, co
     name: season_response.name,
     overview: season_response.overview,
     episodes: [],
-    poster_path: find_image_path(images.posters, tmdb_language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
+    poster_path: find_image_path(images.posters, language) || find_image_path(images.posters, 'en') || find_image_path(images.posters, null),
   };
 };
 
-const search_tvshow_episode = async (tvshow_id: number, season_number: number, episode_number: number, config: IConfig): Promise<ITvShowEpisode | null> => {
-  const { tmdb_language } = config;
-
-  const episode_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}?language=${tmdb_language}`);
+const search_tvshow_episode = async (tvshow_id: number, season_number: number, episode_number: number, language: string): Promise<ITvShowEpisode | null> => {
+  const episode_response = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}?language=${language}`);
   if (!episode_response) return null;
 
   const images = await create_request(`https://api.themoviedb.org/3/tv/${tvshow_id}/season/${season_number}/episode/${episode_number}/images`);
@@ -230,13 +220,13 @@ const search_tvshow_episode = async (tvshow_id: number, season_number: number, e
     title: episode_response.name,
     overview: episode_response.overview,
     air_date: episode_response.air_date,
-    still_path: find_image_path(images.stills, tmdb_language) || find_image_path(images.stills, 'en') || find_image_path(images.stills, null),
+    still_path: find_image_path(images.stills, language) || find_image_path(images.stills, 'en') || find_image_path(images.stills, null),
     runtime: episode_response.runtime,
     path: null,
   };
 };
 
-const search_video = async (id: number, media_type: EMediaType, config: IConfig): Promise<string | null> => {
+const search_video = async (id: number, media_type: EMediaType, language: string): Promise<string | null> => {
   let base_url;
   switch (media_type) {
     case EMediaType.Movies:
@@ -247,7 +237,7 @@ const search_video = async (id: number, media_type: EMediaType, config: IConfig)
       break;
   }
 
-  const videos = await create_request(`${base_url}/${id}/videos?language=${config.tmdb_language}`);
+  const videos = await create_request(`${base_url}/${id}/videos?language=${language}`);
   if (!videos || !videos.results || videos.results.length === 0) return null;
 
   for (const video of videos.results) if (video.type === 'Trailer' && video.site === 'YouTube') return video.key;

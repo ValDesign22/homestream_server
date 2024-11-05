@@ -1,60 +1,31 @@
 import { load_config } from './config';
 import { load_store } from './store';
-import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './types';
+import { EMediaType, IConfig, IMovie, ITvShow, ITvShowEpisode } from './types';
 
-const getVideoItemById = (id: number): IMovie | ITvShowEpisode | null => {
+const searchItemById = (id: number, isEpisodeSearch: boolean = false): IMovie | ITvShow | ITvShowEpisode | null => {
   const config = load_config();
+  const stack: (IMovie | ITvShow | ITvShowEpisode)[] = [];
+  const visited = new Set<number>();
   const stores: Record<string, IMovie[] | ITvShow[]> = {};
   for (const folder of config.folders) stores[folder.name] = load_store(folder);
 
-  const stack: (IMovie | ITvShowEpisode)[] = [];
-  const visited = new Set<number>();
-
-  for (const storeKey in stores) {
-    const store = stores[storeKey];
+  for (const store of Object.values(stores)) {
     if (!store.length) continue;
 
     if (store[0].hasOwnProperty('collection_id')) stack.push(...store as IMovie[]);
-    else for (const tvShow of store as ITvShow[]) {
-      for (const season of tvShow.seasons) stack.push(...season.episodes);
+    else if (isEpisodeSearch) {
+      for (const tvShow of store as ITvShow[]) {
+        for (const season of tvShow.seasons) stack.push(...season.episodes);
+      }
+    } else stack.push(...store as ITvShow[]);
+  }
+
+  while (stack.length) {
+    const item = stack.pop();
+    if (item && !visited.has(item.id)) {
+      visited.add(item.id);
+      if (item.id === id) return item;
     }
-  }
-
-  while (stack.length) {
-    const item = stack.pop();
-    if (!item) continue;
-    if (visited.has(item.id)) continue;
-    visited.add(item.id);
-
-    if (item.id === id) return item;
-  }
-
-  return null;
-};
-
-const searchItemById = (id: number): IMovie | ITvShow | null => {
-  const config = load_config();
-  const stores: Record<string, IMovie[] | ITvShow[]> = {};
-  for (const folder of config.folders) stores[folder.name] = load_store(folder);
-
-  const stack: (IMovie | ITvShow)[] = [];
-  const visited = new Set<number>();
-
-  for (const storeKey in stores) {
-    const store = stores[storeKey];
-    if (!store.length) continue;
-
-    if (store[0].hasOwnProperty('collection_id')) stack.push(...store as IMovie[]);
-    else stack.push(...store as ITvShow[]);
-  }
-
-  while (stack.length) {
-    const item = stack.pop();
-    if (!item) continue;
-    if (visited.has(item.id)) continue;
-    visited.add(item.id);
-
-    if (item.id === id) return item;
   }
 
   return null;
@@ -62,29 +33,13 @@ const searchItemById = (id: number): IMovie | ITvShow | null => {
 
 const getCollectionById = (id: number): IMovie[] => {
   const config = load_config();
-  const stores: Record<string, IMovie[]> = {};
+  const movies: IMovie[] = [];
+
   for (const folder of config.folders) {
-    if (folder.media_type === EMediaType.Movies) stores[folder.name] = load_store(folder) as IMovie[];
+    if (folder.media_type === EMediaType.Movies) movies.push(...load_store(folder) as IMovie[]);
   }
 
-  const stack: IMovie[] = [];
-  const collection: IMovie[] = [];
-
-  for (const storeKey in stores) {
-    const store = stores[storeKey];
-    if (!store.length) continue;
-
-    stack.push(...store);
-  }
-
-  while (stack.length) {
-    const item = stack.pop();
-    if (!item) continue;
-
-    if (item.collection_id === id) collection.push(item);
-  }
-
-  return collection;
+  return movies.filter((movie) => movie.collection_id === id);
 }
 
-export { getVideoItemById, searchItemById, getCollectionById };
+export { searchItemById, getCollectionById };

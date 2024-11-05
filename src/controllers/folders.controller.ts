@@ -17,15 +17,17 @@ export class FoldersController {
     const FILES_FOLDER = process.env.FILES_FOLDER;
     if (!FILES_FOLDER) return res.status(500).json({ message: 'Files folder not set' });
 
-    const stack: IFolderItem[] = [{
-      id: 0,
-      name: FILES_FOLDER.split('/').pop() || '',
-      path: FILES_FOLDER,
-      children: []
-    }];
+    let lastId = 0;
 
-    const root = stack[0];
-    let lastId = root.id;
+    const createFolder = (name: string, path: string): IFolderItem => ({
+      id: ++lastId,
+      name,
+      path,
+      children: []
+    });
+
+    const root = createFolder(FILES_FOLDER.split('/').pop() || '', FILES_FOLDER);
+    const stack: IFolderItem[] = [root];
 
     while (stack.length) {
       const current = stack.pop();
@@ -38,13 +40,8 @@ export class FoldersController {
         const itemStat = statSync(itemPath);
 
         if (itemStat.isDirectory()) {
-          const folder: IFolderItem = {
-            id: ++lastId,
-            name: item,
-            path: itemPath,
-            children: []
-          };
-          current.children?.push(folder);
+          const folder = createFolder(item, itemPath);
+          current.children!.push(folder);
           stack.push(folder);
         }
       }

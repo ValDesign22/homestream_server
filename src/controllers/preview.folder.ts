@@ -22,7 +22,7 @@ export class PreviewController {
     const config = load_config();
 
     const media_type = item.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
-    const preview_video_url = await search_video(item.id, media_type, config);
+    const preview_video_url = await search_video(item.id, media_type, config.tmdb_language);
     if (!preview_video_url) return res.status(404).json({ message: 'Preview video not found' });
 
     return res.status(200).json(preview_video_url);

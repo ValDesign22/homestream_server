@@ -1,9 +1,10 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import chalk from 'chalk';
-import { getVideoItemById } from '../utils/item';
+import { searchItemById } from '../utils/item';
 import ffmpeg from 'fluent-ffmpeg';
 import { extractSubtitle, getSubtitlePath, subtitleExists } from '../utils/subtitles';
+import { IMovie, ITvShowEpisode } from '../utils/types';
 
 @Controller('/track')
 export class TrackController {
@@ -27,7 +28,7 @@ export class TrackController {
     const { id, extract_type, track_index } = req.query;
     if (!['audio', 'subtitle'].includes(extract_type as string)) return res.status(400).json({ message: 'Invalid extract_type' });
 
-    const videoItem = getVideoItemById(parseInt(id as string, 10));
+    const videoItem = searchItemById(parseInt(id as string, 10), true) as IMovie | ITvShowEpisode | null;
     if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;

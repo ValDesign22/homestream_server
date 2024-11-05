@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { ffprobe } from 'fluent-ffmpeg';
-import { getVideoItemById } from '../utils/item';
-import { ITrack, ITracks } from '../utils/types';
+import { searchItemById } from '../utils/item';
+import { IMovie, ITrack, ITracks, ITvShowEpisode } from '../utils/types';
 import { extractSubtitles } from '../utils/subtitles';
 
 @Controller('/tracks')
@@ -17,7 +17,7 @@ export class TracksController {
   public get(req: Request, res: Response) {
     const { id } = req.query;
 
-    const videoItem = getVideoItemById(parseInt(id as string, 10));
+    const videoItem = searchItemById(parseInt(id as string, 10), true) as IMovie | ITvShowEpisode | null;
     if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;

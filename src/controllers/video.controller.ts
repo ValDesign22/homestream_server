@@ -1,7 +1,8 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { createReadStream, statSync } from 'node:fs';
-import { getVideoItemById } from '../utils/item';
+import { searchItemById } from '../utils/item';
+import { IMovie, ITvShowEpisode } from '../utils/types';
 
 @Controller('/video')
 export class VideoController {
@@ -15,7 +16,7 @@ export class VideoController {
   public get(req: Request, res: Response) {
     const { id } = req.query;
 
-    const videoItem = getVideoItemById(parseInt(id as string, 10));
+    const videoItem = searchItemById(parseInt(id as string, 10), true) as IMovie | ITvShowEpisode | null;
     if (!videoItem) return res.status(404).json({ message: 'Video not found' });
 
     const videoPath = videoItem.path;

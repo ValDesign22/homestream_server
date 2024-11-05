@@ -7,12 +7,11 @@ import { existsSync } from 'node:fs';
 import { AppModule } from './modules/app.module';
 
 import { load_config } from './utils/config';
-import { EMediaType, IMovie, ITvShow, ITvShowEpisode } from './utils/types';
+import { EMediaType, IMovie, ITvShow } from './utils/types';
 import { load_store, save_store } from './utils/store';
 import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 import { deleteSubtitles } from './utils/subtitles';
-
 
 async function bootstrap() {
   const app = new NuxumApp({
@@ -143,8 +142,7 @@ async function bootstrap() {
             const movie = currentStore.find((movie) => movie.path === path);
             if (!movie) return;
             deleteSubtitles(movie);
-            const newStore = currentStore.filter((movie) => movie.path !== path);
-            save_store(folder, newStore);
+            save_store(folder, currentStore.filter((movie) => movie.path !== path));
             break;
           case EMediaType.TvShows:
             const tvshows = load_store(folder) as ITvShow[];

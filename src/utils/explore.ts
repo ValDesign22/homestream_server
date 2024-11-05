@@ -1,11 +1,11 @@
 import { readdirSync } from 'node:fs';
 import { load_store } from './store';
-import { IConfig, IFolder, IMovie, ITvShow, ITvShowEpisode, ITvShowSeason } from './types';
+import { IConfig, IFolder, IMovie, ITvShow } from './types';
 import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './tmdb';
 
 const videoExtensions = ['avi', 'mkv', 'mp4', 'webm', 'wmv'];
 
-const explore_movies = async (config: IConfig, folder: IFolder): Promise<IMovie[]> => {
+const explore_movies = async ({ tmdb_language }: IConfig, folder: IFolder): Promise<IMovie[]> => {
   const stack = [folder.path];
 
   const movies: IMovie[] = [];
@@ -37,7 +37,7 @@ const explore_movies = async (config: IConfig, folder: IFolder): Promise<IMovie[
       if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
       const title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
-      const movie = await search_movie(title, date, config);
+      const movie = await search_movie(title, date, tmdb_language);
 
       if (movie) movies.push({
         ...movie,
@@ -49,7 +49,7 @@ const explore_movies = async (config: IConfig, folder: IFolder): Promise<IMovie[
   return movies;
 };
 
-const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvShow[]> => {
+const explore_tv_shows = async ({ tmdb_language }: IConfig, folder: IFolder): Promise<ITvShow[]> => {
   const stack = [folder.path];
 
   const tvshows: ITvShow[] = [];
@@ -81,7 +81,7 @@ const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvSh
 
       let tvshow_id = cache.get(title);
       if (!tvshow_id) {
-        const tvshow = await search_tvshow(title, null, config);
+        const tvshow = await search_tvshow(title, null, tmdb_language);
         if (!tvshow) continue;
         cache.set(title, tvshow.id);
         tvshow_id = tvshow.id;
@@ -97,7 +97,7 @@ const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvSh
 
       let tvshow_season = tvshow.seasons.find((s) => s.season_number === season_number);
       if (!tvshow_season) {
-        const season = await search_tvshow_season(tvshow_id, season_number, config);
+        const season = await search_tvshow_season(tvshow_id, season_number, tmdb_language);
         if (!season) continue;
         tvshow.seasons.push(season);
         tvshow_season = season;
@@ -110,7 +110,7 @@ const explore_tv_shows = async (config: IConfig, folder: IFolder): Promise<ITvSh
       const existing_episode = tvshow_season.episodes.find((e) => e.episode_number === episode_number);
       if (existing_episode) continue;
 
-      const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, config);
+      const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, tmdb_language);
       if (!episode_data) continue;
       tvshow_season.episodes.push({
         ...episode_data,

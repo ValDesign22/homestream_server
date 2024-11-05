@@ -18,7 +18,6 @@ export class SearchController {
   })
   public async get(req: Request, res: Response) {
     const { query, type } = req.query;
-
     const results = await search(query as string, type as string);
     return res.status(200).json(results);
   }
