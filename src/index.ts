@@ -40,13 +40,13 @@ async function bootstrap() {
   });
 
   watcher.on('all', async (event, path) => {
-    const config = load_config();
-    if (!config.folders) return;
+    const { folders, tmdb_language } = load_config();
+    if (!folders) return;
 
     if (!['avi', 'mkv', 'mp4', 'webm', 'wmv'].includes(path.split('.').pop() as string)) return;
 
     if (event === 'add') {
-      for (const folder of config.folders) {
+      for (const folder of folders) {
         if (!path.startsWith(folder.path)) continue;
         switch (folder.media_type) {
           case EMediaType.Movies:
@@ -60,7 +60,7 @@ async function bootstrap() {
             if (date_match && date_match[0].length === 4 && date_match[0].length !== file_name.length && date_match[0].split('').every((char) => !isNaN(parseInt(char)))) date = date_match[0];
             const movie_title = date ? file_name.split(' ').slice(0, -1).join(' ') : file_name;
 
-            const movie = await search_movie(movie_title, date, config);
+            const movie = await search_movie(movie_title, date, tmdb_language);
 
             if (movie) currentStore.push({
               ...movie,
@@ -86,7 +86,7 @@ async function bootstrap() {
               }
             }
             if (!tvshow_id) {
-              const tvshow = await search_tvshow(tvshow_title, null, config);
+              const tvshow = await search_tvshow(tvshow_title, null, tmdb_language);
               if (!tvshow) continue;
               const existing_tvshow = tvshows.find((t) => t.id === tvshow.id);
               if (existing_tvshow) tvshow_id = existing_tvshow.id;
@@ -104,7 +104,7 @@ async function bootstrap() {
 
             let tvshow_season = tvshow.seasons.find((s) => s.season_number === season_number);
             if (!tvshow_season) {
-              const season = await search_tvshow_season(tvshow_id, season_number, config);
+              const season = await search_tvshow_season(tvshow_id, season_number, tmdb_language);
               if (!season) continue;
               tvshow.seasons.push(season);
               tvshow_season = season;
@@ -117,7 +117,7 @@ async function bootstrap() {
             const existing_episode = tvshow_season.episodes.find((e) => e.episode_number === episode_number);
             if (existing_episode) continue;
 
-            const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, config);
+            const episode_data = await search_tvshow_episode(tvshow_id, season_number, episode_number, tmdb_language);
             if (!episode_data) continue;
             tvshow_season.episodes.push({
               ...episode_data,
@@ -133,8 +133,8 @@ async function bootstrap() {
         console.log(`${media_type} added:`, path);
       }
     }
-    if (event === 'unlink') {
-      for (const folder of config.folders) {
+    else if (event === 'unlink') {
+      for (const folder of folders) {
         if (!path.startsWith(folder.path)) continue;
         switch (folder.media_type) {
           case EMediaType.Movies:

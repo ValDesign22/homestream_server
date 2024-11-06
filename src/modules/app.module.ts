@@ -3,7 +3,7 @@ import { CollectionController } from '../controllers/collection.controller';
 import { ConfigController } from '../controllers/config.controller';
 import { DetailsController } from '../controllers/details.controller';
 import { FoldersController } from '../controllers/folders.controller';
-import { PreviewController } from '../controllers/preview.folder';
+import { PreviewController } from '../controllers/preview.controller';
 import { ProfilesController } from '../controllers/profiles.controller';
 import { SearchController } from '../controllers/search.controller';
 import { SetupController } from '../controllers/setup.controller';
