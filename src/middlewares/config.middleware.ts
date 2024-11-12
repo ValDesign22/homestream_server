@@ -5,8 +5,10 @@ import { load_config } from "../utils/config";
 @Injectable()
 export class ConfigMiddleware implements NuxumMiddleware {
   public use(req: Request, res: Response, next: NextFunction) {
-    const config = load_config();
-    if (!config && req.path !== '/config') return res.status(500).json({ message: 'No config found' });
-    next();
+    if (!load_config()) {
+      if (req.path !== '/config' || (req.path === '/config' && req.method !== 'PATCH'))
+        return res.status(500).json({ message: 'No config found' })
+    }
+    else next();
   }
 }
