@@ -19,7 +19,7 @@ export class PreviewController {
     const item = searchItemById(parseInt(id as string, 10));
     if (!item) return res.status(404).json({ message: 'Video not found' });
 
-    const config = load_config();
+    const config = load_config()!;
 
     const media_type = item.hasOwnProperty('collection_id') ? EMediaType.Movies : EMediaType.TvShows;
     const preview_video_url = await search_video(item.id, media_type, config.tmdb_language);

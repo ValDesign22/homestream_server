@@ -2,6 +2,7 @@ import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'path';
+import { load_config } from '../utils/config';
 
 interface IFolderItem {
   id: number;
@@ -14,8 +15,8 @@ interface IFolderItem {
 export class FoldersController {
   @Get()
   public get(_: Request, res: Response) {
-    const FILES_FOLDER = process.env.FILES_FOLDER;
-    if (!FILES_FOLDER) return res.status(500).json({ message: 'Files folder not set' });
+    const { files_folder } = load_config()!;
+    if (!files_folder) return res.status(500).json({ message: 'Files folder not set' });
 
     let lastId = 0;
 
@@ -26,7 +27,7 @@ export class FoldersController {
       children: []
     });
 
-    const root = createFolder(FILES_FOLDER.split('/').pop() || '', FILES_FOLDER);
+    const root = createFolder(files_folder.split('/').pop() || '', files_folder);
     const stack: IFolderItem[] = [root];
 
     while (stack.length) {

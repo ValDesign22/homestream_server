@@ -1,25 +1,29 @@
 import chalk from 'chalk';
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { join } from 'node:path';
 import { IMovie, ITrack, ITvShowEpisode } from './types';
 import ffmpeg from 'fluent-ffmpeg';
+import { load_config } from './config';
 
 function createSubtitlesFolder(): void {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return;
-  if (!existsSync(APP_STORAGE_PATH)) return;
+  const config = load_config();
+  if (!config) return;
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return;
 
-  const subtitlesPath = `${APP_STORAGE_PATH}/subtitles`;
+  const subtitlesPath = `${app_storage_path}/subtitles`;
   if (!existsSync(subtitlesPath)) return;
 
   return mkdirSync(subtitlesPath);
 }
 
 function deleteSubtitles(item: IMovie | ITvShowEpisode): void {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return;
-  if (!existsSync(APP_STORAGE_PATH)) return;
+  const config = load_config();
+  if (!config) return;
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return;
 
-  const subtitlesPath = `${APP_STORAGE_PATH}/subtitles`;
+  const subtitlesPath = `${app_storage_path}/subtitles`;
   if (!existsSync(subtitlesPath)) return;
 
   const files = readdirSync(subtitlesPath);
@@ -59,14 +63,19 @@ function extractSubtitles(item: IMovie | ITvShowEpisode): void {
 
 function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-    if (!APP_STORAGE_PATH) return reject('APP_STORAGE_PATH not set');
-    if (!existsSync(APP_STORAGE_PATH)) return reject('APP_STORAGE_PATH does not exist');
-    if (!existsSync(`${APP_STORAGE_PATH}/subtitles`)) createSubtitlesFolder();
+    const config = load_config();
+    if (!config) return reject('Config does not exist');
+    const { app_storage_path } = config;
+    if (!existsSync(app_storage_path)) return reject('App storage path does not exist');
+    if (!existsSync(`${app_storage_path}/subtitles`)) createSubtitlesFolder();
 
     if (!item.path) return reject('Item has no path');
 
-    const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
+    const destination = join(
+      app_storage_path,
+      'subtitles',
+      `${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`
+    );
 
     ffmpeg(item.path)
       .noAudio()
@@ -84,26 +93,36 @@ function extractSubtitle(item: IMovie | ITvShowEpisode, track_index: number, cod
 }
 
 function subtitleExists(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): boolean {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return false;
-  if (!existsSync(APP_STORAGE_PATH)) return false;
-  if (!existsSync(`${APP_STORAGE_PATH}/subtitles`)) createSubtitlesFolder();
+  const config = load_config();
+  if (!config) return false;
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return false;
+  if (!existsSync(`${app_storage_path}/subtitles`)) createSubtitlesFolder();
 
   if (!item.path) return false;
 
-  const destination = `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
+  const destination = join(
+    app_storage_path,
+    'subtitles',
+    `${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`
+  );
   return existsSync(destination);
 }
 
 function getSubtitlePath(item: IMovie | ITvShowEpisode, track_index: number, codec_name: string): string | null {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return null;
-  if (!existsSync(APP_STORAGE_PATH)) return null;
-  if (!existsSync(`${APP_STORAGE_PATH}/subtitles`)) createSubtitlesFolder();
+  const config = load_config();
+  if (!config) return null;
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return null;
+  if (!existsSync(`${app_storage_path}/subtitles`)) createSubtitlesFolder();
 
   if (!subtitleExists(item, track_index, codec_name)) return null;
 
-  return `${APP_STORAGE_PATH}/subtitles/${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`;
+  return join(
+    app_storage_path,
+    'subtitles',
+    `${item.id}_${track_index}.${codec_name === 'ass' ? 'ass' : 'vtt'}`
+  );
 }
 
 export { deleteSubtitles, extractSubtitles, extractSubtitle, subtitleExists, getSubtitlePath };

@@ -13,6 +13,18 @@ export class ConfigController {
 
   @Patch({
     body: [{
+      type: 'string',
+      required: true,
+      name: 'app_storage_path',
+    }, {
+      type: 'string',
+      required: true,
+      name: 'files_folder',
+    }, {
+      type: 'string',
+      required: false,
+      name: 'watch_dir',
+    }, {
       type: 'array',
       required: true,
       name: 'folders',
@@ -37,14 +49,32 @@ export class ConfigController {
     }, {
       type: 'string',
       required: true,
+      name: 'tmdb_api_key',
+    }, {
+      type: 'string',
+      required: true,
       name: 'tmdb_language',
     }]
   })
   public patch(req: Request, res: Response) {
-    const { folders, tmdb_language } = req.body as Request['body'] & IConfig;
+    const {
+      app_storage_path,
+      files_folder,
+      watch_dir,
+      folders,
+      tmdb_api_key,
+      tmdb_language
+    } = req.body as Request['body'] & IConfig;
 
     try {
-      save_config({ folders, tmdb_language });
+      save_config({
+        app_storage_path,
+        files_folder,
+        watch_dir,
+        folders,
+        tmdb_api_key,
+        tmdb_language
+      });
       return res.status(200).json({ message: 'Config updated successfully' });
     } catch (error) {
       console.error(error);

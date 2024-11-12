@@ -47,7 +47,7 @@ export class DetailsController {
 
     if (parseInt(type as string, 10) === EMediaType.TvShows) return res.status(400).json({ message: 'Cannot patch Tv Shows' });
 
-    const { tmdb_language, folders } = load_config();
+    const { folders, tmdb_language } = load_config()!;
 
     const response = await create_request(`https://api.themoviedb.org/3/movie/${new_id}?language=${tmdb_language}&append_to_response=release_dates`);
     if (!response) return res.status(404).json({ message: 'Movie not found' });

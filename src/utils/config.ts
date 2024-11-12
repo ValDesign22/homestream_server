@@ -1,23 +1,47 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { platform, homedir } from 'node:os';
+import { join } from 'node:path';
+import { parse, stringify } from 'yaml';
 import { IConfig } from './types';
 
-const load_config = (): IConfig => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) throw new Error('APP_STORAGE_PATH not set');
-
-  const config_path = `${APP_STORAGE_PATH}/config.json`;
-
-  if (!existsSync(config_path)) writeFileSync(config_path, JSON.stringify({ folders: [], tmdb_language: 'en-US' }, null, 2));
-  const config = readFileSync(config_path, 'utf-8');
-  return JSON.parse(config);
+const get_config_path = (): string => {
+  const config_name = 'homestream_server';
+  switch (platform()) {
+    case 'win32':
+      return join(homedir(), 'AppData', 'Roaming', config_name);
+    case 'darwin':
+      return join(homedir(), 'Library', 'Application Support', config_name);
+    case 'linux':
+      return join(homedir(), '.config', config_name);
+    default:
+      if (platform().startsWith('win')) return join(homedir(), 'AppData', 'Roaming', config_name);
+      return join(homedir(), '.config', config_name);
+  }
 };
 
-const save_config = (config: IConfig) => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) throw new Error('APP_STORAGE_PATH not set');
+const ensure_config_path = (): void => {
+  const config_path = get_config_path();
+  if (!existsSync(config_path)) mkdirSync(config_path, { recursive: true });
+};
 
-  const config_path = `${APP_STORAGE_PATH}/config.json`;
-  writeFileSync(config_path, JSON.stringify(config, null, 2));
+const load_config = (): IConfig | null => {
+  const config_path = get_config_path();
+  if (!existsSync(config_path)) {
+    ensure_config_path();
+    return null;
+  }
+
+  if (!existsSync(join(config_path, 'config.yml'))) return null;
+
+  const config = readFileSync(join(config_path, 'config.yml'), 'utf-8');
+  return parse(config) as IConfig;
+}
+
+const save_config = (config: IConfig) => {
+  const config_path = get_config_path();
+  ensure_config_path();
+
+  writeFileSync(join(config_path, 'config.yml'), stringify(config));
 };
 
 export { load_config, save_config };

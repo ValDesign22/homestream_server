@@ -8,7 +8,7 @@ import { explore_tv_shows } from '../utils/explore';
 export class TestController {
   @Get()
   public async get(req: Request, res: Response) {
-    const config = load_config();
+    const config = load_config()!;
 
     const data = [];
 

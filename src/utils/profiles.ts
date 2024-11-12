@@ -1,12 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { IProfile } from './types';
+import { load_config } from './config';
 
 const getProfiles = (): IProfile[] | null => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) throw new Error('APP_STORAGE_PATH is not defined');
-  if (!existsSync(APP_STORAGE_PATH)) return null;
+  const config = load_config();
+  if (!config) return null;
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return null;
 
-  const profiles_path = `${APP_STORAGE_PATH}/profiles.json`;
+  const profiles_path = `${app_storage_path}/profiles.json`;
   if (!existsSync(profiles_path)) writeFileSync(profiles_path, '[]');
   const profiles = readFileSync(profiles_path, 'utf-8');
 
@@ -19,10 +21,10 @@ const getProfiles = (): IProfile[] | null => {
 };
 
 const saveProfiles = (profiles: IProfile[]) => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return;
+  const config = load_config();
+  if (!config) return;
 
-  const profiles_path = `${APP_STORAGE_PATH}/profiles.json`;
+  const profiles_path = `${config.app_storage_path}/profiles.json`;
   writeFileSync(profiles_path, JSON.stringify(profiles, null, 2));
 }
 

@@ -1,5 +1,9 @@
 export interface IConfig {
+  app_storage_path: string;
+  files_folder: string;
+  watch_dir?: string;
   folders: IFolder[];
+  tmdb_api_key: string;
   tmdb_language: string;
 }
 

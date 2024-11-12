@@ -38,6 +38,9 @@ importers:
       ws:
         specifier: ^8.18.0
         version: 8.18.0
+      yaml:
+        specifier: ^2.6.0
+        version: 2.6.0
     devDependencies:
       '@types/express':
         specifier: ^5.0.0
@@ -850,6 +853,11 @@ packages:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
 
+  yaml@2.6.0:
+    resolution: {integrity: sha512-a6ae//JvKDEra2kdi1qzCyrJW/WZCgFi8ydDV+eXExl95t+5R+ijnqHJbz9tmMh8FUjx3iv2fCQ4dclAQlO2UQ==}
+    engines: {node: '>= 14'}
+    hasBin: true
+
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
     engines: {node: '>=6'}
@@ -1637,5 +1645,7 @@ snapshots:
   ws@8.18.0: {}
 
   yallist@5.0.0: {}
+
+  yaml@2.6.0: {}
 
   yn@3.1.1: {}

@@ -4,6 +4,7 @@ import { EMediaType, IConfig, IMovie, ITvShow, ITvShowEpisode } from './types';
 
 const searchItemById = (id: number, isEpisodeSearch: boolean = false): IMovie | ITvShow | ITvShowEpisode | null => {
   const config = load_config();
+  if (!config) return null;
   const stack: (IMovie | ITvShow | ITvShowEpisode)[] = [];
   const visited = new Set<number>();
   const stores: Record<string, IMovie[] | ITvShow[]> = {};
@@ -34,6 +35,7 @@ const searchItemById = (id: number, isEpisodeSearch: boolean = false): IMovie | 
 const getCollectionById = (id: number): IMovie[] => {
   const config = load_config();
   const movies: IMovie[] = [];
+  if (!config) return movies;
 
   for (const folder of config.folders) {
     if (folder.media_type === EMediaType.Movies) movies.push(...load_store(folder) as IMovie[]);

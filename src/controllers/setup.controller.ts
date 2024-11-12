@@ -9,7 +9,7 @@ import { save_store } from '../utils/store';
 export class SetupController {
   @Get()
   public async get(_: Request, res: Response) {
-    const config = load_config();
+    const config = load_config()!;
 
     for (const folder of config.folders) {
       console.log(`Exploring ${folder.name} folder...`);

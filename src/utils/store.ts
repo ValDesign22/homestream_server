@@ -1,12 +1,14 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { IFolder, IMovie, ITvShow } from './types';
+import { load_config } from './config';
 
 const load_store = (folder: IFolder): IMovie[] | ITvShow[] => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return [];
-  if (!existsSync(APP_STORAGE_PATH)) return [];
+  const config = load_config();
+  if (!config) return [];
+  const { app_storage_path } = config;
+  if (!existsSync(app_storage_path)) return [];
 
-  const store_path = `${APP_STORAGE_PATH}/${folder.id}_store.json`;
+  const store_path = `${app_storage_path}/${folder.id}_store.json`;
   if (!existsSync(store_path)) writeFileSync(store_path, '[]');
   const store = readFileSync(store_path, 'utf-8');
 
@@ -19,10 +21,10 @@ const load_store = (folder: IFolder): IMovie[] | ITvShow[] => {
 }
 
 const save_store = (folder: IFolder, content: IMovie[] | ITvShow[]) => {
-  const APP_STORAGE_PATH = process.env.APP_STORAGE_PATH;
-  if (!APP_STORAGE_PATH) return;
+  const config = load_config();
+  if (!config) return;
 
-  const store_path = `${APP_STORAGE_PATH}/${folder.id}_store.json`;
+  const store_path = `${config.app_storage_path}/${folder.id}_store.json`;
   writeFileSync(store_path, JSON.stringify(content, null, 2));
 }
 

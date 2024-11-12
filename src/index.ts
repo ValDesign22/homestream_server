@@ -12,12 +12,12 @@ import { load_store, save_store } from './utils/store';
 import { search_movie, search_tvshow, search_tvshow_episode, search_tvshow_season } from './utils/tmdb';
 import { checkForUpdates, downloadAndApplyUpdate } from './utils/updater';
 import { deleteSubtitles } from './utils/subtitles';
+import { ConfigMiddleware } from './middlewares/config.middleware';
 
 async function bootstrap() {
   const app = new NuxumApp({
-    modules: [
-      AppModule,
-    ],
+    modules: [AppModule],
+    middlewares: [ConfigMiddleware],
     cors: {
       origin: '*',
       methods: ['GET', 'POST', 'PATCH', 'DELETE'],
@@ -40,7 +40,9 @@ async function bootstrap() {
   });
 
   watcher.on('all', async (event, path) => {
-    const { folders, tmdb_language } = load_config();
+    const config = load_config();
+    if (!config) return;
+    const { folders, tmdb_language } = config;
     if (!folders) return;
 
     if (!['avi', 'mkv', 'mp4', 'webm', 'wmv'].includes(path.split('.').pop() as string)) return;

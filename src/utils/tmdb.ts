@@ -4,12 +4,13 @@ import { EMediaType, IGenre, IImagesResponse, IMovie, ITvShow, ITvShowEpisode, I
 import { load_config } from './config';
 
 const create_request = async (url: string) => {
-  const TMDB_API_KEY = process.env.TMDB_API_KEY;
-  if (!TMDB_API_KEY) throw new Error('TMDB_API_KEY is not defined');
+  const config = load_config();
+  if (!config) throw new Error('Config is not defined');
+  const { tmdb_api_key } = config;
 
   const response = await axios.get(url, {
     headers: {
-      Authorization: `Bearer ${TMDB_API_KEY}`,
+      Authorization: `Bearer ${tmdb_api_key}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
@@ -46,6 +47,7 @@ const fetch_images = async (id: number, media_type: EMediaType, language: string
 
 const search = async (title: string, type: string): Promise<IMovie[] | ITvShow[]> => {
   const config = load_config();
+  if (!config) return [];
   const { tmdb_language } = config;
 
   if (!title || !type) return [];
