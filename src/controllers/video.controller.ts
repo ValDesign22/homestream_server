@@ -4,8 +4,8 @@ import { createReadStream, statSync } from 'node:fs';
 import { searchItemById } from '../utils/item';
 import { IMovie, ITvShowEpisode } from '../utils/types';
 import { load_config } from '../utils/config';
-import { getHardwareAccelerationSupport } from '../utils/video';
 import ffmpeg from 'fluent-ffmpeg';
+import { Writable } from 'node:stream';
 
 @Controller('/video')
 export class VideoController {
@@ -16,11 +16,11 @@ export class VideoController {
       name: 'id',
     }],
   })
-  public get(req: Request, res: Response) {
+  public async get(req: Request, res: Response) {
     const { id } = req.query;
 
     const { hardware_acceleration } = load_config()!;
-    const hwaccelsSupported = hardware_acceleration && getHardwareAccelerationSupport();
+    const hwaccelsSupported = false;
 
     const videoItem = searchItemById(parseInt(id as string, 10), true) as IMovie | ITvShowEpisode | null;
     if (!videoItem) return res.status(404).json({ message: 'Video not found' });
@@ -52,24 +52,41 @@ export class VideoController {
       if (hwaccelsSupported) {
         console.log('[HWACCEL] Using hardware-accelerated video streaming');
 
-        ffmpeg(videoPath)
-          .setStartTime(start)
-          .videoCodec('h264_nvenc')
-          .format('mp4')
+        const ffmpegStream = ffmpeg(videoPath)
+          .setStartTime(start / 1000)
+          .inputOptions([
+            '-hwaccel auto',
+            '-hwaccel_device auto',
+            '-hwaccel_output_format cuda',
+          ])
+          .videoCodec('libx264')
           .addOutputOptions([
-            '-hwaccel cuvid',
             '-movflags frag_keyframe+empty_moov',
             '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2',
           ])
-          .on('error', (err) => {
+          .format('mp4');
+
+        const writableStream = new Writable({
+          write(chunk, encoding, callback) {
+            res.write(chunk, encoding, callback);
+          },
+        });
+
+        ffmpegStream
+          .on('progress', (progress) => {
+            console.log(`[HWACCEL] Progress: ${progress.percent}%`);
+          })
+          .on('error', (err, stdout, stderr) => {
             console.log('[HWACCEL] Error:', err);
+            console.log('[HWACCEL] Output:', stdout);
+            console.log('[HWACCEL] Error output:', stderr);
             res.status(500).end('Error streaming video');
           })
           .on('end', () => {
             console.log('[HWACCEL] Video streaming ended');
             res.end();
           })
-          .pipe(res, { end: true });
+          .pipe(writableStream);
 
         req.on('close', () => {
           if (!res.writableEnded) res.end();

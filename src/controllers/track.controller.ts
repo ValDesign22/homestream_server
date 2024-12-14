@@ -58,7 +58,7 @@ export class TrackController {
             .audioBitrate(128)
             .outputOptions([`-map 0:a:${streamIndex}?`])
             .on('error', (error) => {
-              console.error(error);
+              console.error(`[${chalk.red('ERROR')}] Error extracting audio: ${error.message}`);
               if (!res.headersSent) res.status(500).json({ message: 'Error extracting audio' });
             })
             .pipe(res.writeHead(200, { 'Content-Type': 'audio/mpeg' }), { end: true });
@@ -66,7 +66,7 @@ export class TrackController {
           if (stream.codec_name && !subtitleExists(videoItem, streamIndex, stream.codec_name))
             extractSubtitle(videoItem, streamIndex, stream.codec_name)
               .then((destination) => console.log(`[${chalk.green('TRACKS')}] Extracted subtitle ${streamIndex} for ${videoItem.id} at ${destination}`))
-              .catch((error) => console.error(error));
+              .catch((error) => console.error(`[${chalk.red('ERROR')}] Error extracting subtitle: ${error.message}`));
           const subtitlesPath = getSubtitlePath(videoItem, streamIndex, stream.codec_name);
           if (!subtitlesPath) return res.status(404).json({ message: 'Cannot find any subtitles for this video' });
           res.sendFile(subtitlesPath);
