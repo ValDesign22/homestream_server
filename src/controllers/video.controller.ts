@@ -3,6 +3,9 @@ import { Request, Response } from 'express';
 import { createReadStream, statSync } from 'node:fs';
 import { searchItemById } from '../utils/item';
 import { IMovie, ITvShowEpisode } from '../utils/types';
+import { load_config } from '../utils/config';
+import { getHardwareAccelerationSupport } from '../utils/video';
+import ffmpeg from 'fluent-ffmpeg';
 
 @Controller('/video')
 export class VideoController {
@@ -15,6 +18,9 @@ export class VideoController {
   })
   public get(req: Request, res: Response) {
     const { id } = req.query;
+
+    const { hardware_acceleration } = load_config()!;
+    const hwaccelsSupported = hardware_acceleration && getHardwareAccelerationSupport();
 
     const videoItem = searchItemById(parseInt(id as string, 10), true) as IMovie | ITvShowEpisode | null;
     if (!videoItem) return res.status(404).json({ message: 'Video not found' });
@@ -43,19 +49,48 @@ export class VideoController {
         'Content-Type': 'video/mp4',
       });
 
-      const stream = createReadStream(videoPath, { start, end });
+      if (hwaccelsSupported) {
+        console.log('[HWACCEL] Using hardware-accelerated video streaming');
 
-      stream.on('open', () => stream.pipe(res));
-      stream.on('error', (streamErr) => {
-        console.error(streamErr);
-        res.status(500).end('Error streaming video');
-      });
+        ffmpeg(videoPath)
+          .setStartTime(start)
+          .videoCodec('h264_nvenc')
+          .format('mp4')
+          .addOutputOptions([
+            '-hwaccel cuvid',
+            '-movflags frag_keyframe+empty_moov',
+            '-vf scale=trunc(iw/2)*2:trunc(ih/2)*2',
+          ])
+          .on('error', (err) => {
+            console.log('[HWACCEL] Error:', err);
+            res.status(500).end('Error streaming video');
+          })
+          .on('end', () => {
+            console.log('[HWACCEL] Video streaming ended');
+            res.end();
+          })
+          .pipe(res, { end: true });
 
-      req.on('close', () => {
-        if (res.writableEnded) return;
-        stream.destroy();
-        res.end();
-      });
+        req.on('close', () => {
+          if (!res.writableEnded) res.end();
+        });
+      } else {
+        console.log('[HWACCEL] Hardware acceleration not enabled or supported');
+
+        const stream = createReadStream(videoPath, { start, end });
+
+        stream.on('open', () => stream.pipe(res));
+        stream.on('error', (streamErr) => {
+          console.error(streamErr);
+          res.status(500).end('Error streaming video');
+        });
+
+        req.on('close', () => {
+          if (res.writableEnded) return;
+          stream.destroy();
+          res.end();
+        });
+      }
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: 'Internal server error' });

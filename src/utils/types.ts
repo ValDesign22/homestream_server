@@ -5,6 +5,7 @@ export interface IConfig {
   folders: IFolder[];
   tmdb_api_key: string;
   tmdb_language: string;
+  hardware_acceleration: boolean;
 }
 
 export interface IFolder {

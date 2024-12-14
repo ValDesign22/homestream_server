@@ -1,6 +1,6 @@
-import { Injectable, NuxumMiddleware } from "@nuxum/core";
-import { NextFunction, Request, Response } from "express";
-import { load_config } from "../utils/config";
+import { Injectable, NuxumMiddleware } from '@nuxum/core';
+import { NextFunction, Request, Response } from 'express';
+import { load_config } from '../utils/config';
 
 @Injectable()
 export class ConfigMiddleware implements NuxumMiddleware {
