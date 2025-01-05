@@ -6,6 +6,7 @@ export interface IConfig {
   tmdb_api_key: string;
   tmdb_language: string;
   hardware_acceleration: boolean;
+  save_images: boolean;
 }
 
 export interface IFolder {
@@ -28,6 +29,14 @@ export interface IMovie {
   runtime: number,
   genres: IGenre[],
   path: string | null,
+}
+
+export interface IMovieCollection {
+  id: number,
+  name: string,
+  overview: string,
+  poster_path: string | null,
+  backdrop_path: string | null,
 }
 
 export interface ITvShow {
@@ -76,6 +85,8 @@ export interface IImagesResponse {
 export enum EMediaType {
   Movies,
   TvShows,
+  Music,
+  Other,
 }
 
 export interface IProfile {
@@ -128,4 +139,10 @@ export interface ITrack {
   handler_name?: string,
   default?: boolean,
   url?: string,
+}
+
+export enum EImageType {
+  Backdrop,
+  Logo,
+  Poster,
 }

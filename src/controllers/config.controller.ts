@@ -58,6 +58,10 @@ export class ConfigController {
       type: 'boolean',
       required: false,
       name: 'hardware_acceleration',
+    }, {
+      type: 'boolean',
+      required: false,
+      name: 'save_images',
     }]
   })
   public patch(req: Request, res: Response) {
@@ -68,7 +72,8 @@ export class ConfigController {
       folders,
       tmdb_api_key,
       tmdb_language,
-      hardware_acceleration
+      hardware_acceleration,
+      save_images,
     } = req.body as Request['body'] & IConfig;
 
     try {
@@ -80,6 +85,7 @@ export class ConfigController {
         tmdb_api_key,
         tmdb_language,
         hardware_acceleration,
+        save_images,
       });
       return res.status(200).json({ message: 'Config updated successfully' });
     } catch (error) {

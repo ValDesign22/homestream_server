@@ -1,11 +1,11 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { platform, homedir } from 'node:os';
-import { join } from 'node:path';
-import { parse, stringify } from 'yaml';
-import { IConfig } from './types';
-import { CONFIG_FILENAME } from './constants.util';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir, platform } from "node:os";
+import { join } from "node:path";
+import { parse, stringify } from "yaml";
+import { CONFIG_FILENAME, LIBRARIES_PATH } from "../utils/constants.util";
+import { IConfig } from "../utils/types";
 
-const get_config_path = (): string => {
+export const get_config_path = (): string => {
   const config_name = 'homestream_server';
   switch (platform()) {
     case 'win32':
@@ -20,14 +20,14 @@ const get_config_path = (): string => {
   }
 };
 
-const ensure_app_folders = (): void => {
+export const ensure_app_folders = (): void => {
   const config_path = get_config_path();
-  const libraries_path = join(config_path, 'libraries');
+  const libraries_path = join(config_path, LIBRARIES_PATH);
   if (!existsSync(config_path)) mkdirSync(config_path, { recursive: true });
   if (!existsSync(libraries_path)) mkdirSync(libraries_path, { recursive: true });
 };
 
-const load_config = (): IConfig | null => {
+export const load_config = (): IConfig | null => {
   const config_path = get_config_path();
   if (!existsSync(config_path)) {
     ensure_app_folders();
@@ -40,16 +40,9 @@ const load_config = (): IConfig | null => {
   return parse(config) as IConfig;
 }
 
-const save_config = (config: IConfig) => {
+export const save_config = (config: IConfig) => {
   const config_path = get_config_path();
   ensure_app_folders();
 
   writeFileSync(join(config_path, CONFIG_FILENAME), stringify(config));
-};
-
-export {
-  get_config_path,
-  ensure_app_folders,
-  load_config,
-  save_config,
 };
