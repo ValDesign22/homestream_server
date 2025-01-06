@@ -71,16 +71,27 @@ export const get_image = (folder: IFolder, id: number, image_type: EImageType): 
   }
 };
 
-const parse_filename = (name: string): { title: string, year: string | null } => {
+const parse_movie_filename = (filename: string): { title: string, year: string | null } => {
   const regex = /^(.*?)(?:\s+(\d{4}))?$/;
-  const match = name.match(regex);
+  const match = filename.match(regex);
 
-  if (!match) return { title: name, year: null };
+  if (!match) return { title: filename, year: null };
 
   const title = match[1].trim();
   const year = match[2] || null;
 
   return { title, year };
+};
+
+const parse_tvshow_filename = (filename: string): { title: string, year: string | null, season: string, episode: string } | null => {
+  const regex = /^(.*?)\s*(?:\((\d{4})\))?\s*S(\d{2})\s*E(\d{2})$/;
+  const match = filename.match(regex);
+
+  if (!match) return null;
+
+  const [_, title, year, season, episode] = match;
+
+  return { title, year, season, episode };
 };
 
 const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promise<void> => {
@@ -106,7 +117,7 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
       if (existing_movie) continue;
 
       const filename = item.name.split('.').shift() as string;
-      const { title, year } = parse_filename(filename);
+      const { title, year } = parse_movie_filename(filename);
       const full_path = join(current_path, item.name);
 
       console.log(`Analyzing movie: ${full_path}\n${title} (${year || 'Unknown Year'})`);
@@ -135,27 +146,6 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
             );
           }
 
-          if (tmdb_movie.collection_id) {
-            if (!get_collection(tmdb_movie.collection_id)) {
-              const tmdb_collection = await search_collection(tmdb_movie.collection_id);
-              if (tmdb_collection) {
-                store_collection(tmdb_collection);
-              }
-            }
-            const collection = get_collection(tmdb_movie.collection_id);
-            if (collection && save_images) {
-              console.log(collection);
-              if (collection.backdrop_path) await download_image(
-                `https://image.tmdb.org/t/p/original${collection.backdrop_path}`,
-                join(get_library_path(folder), tmdb_movie.collection_id.toString(), BACKDROP_FILENAME)
-              );
-              if (collection.poster_path) await download_image(
-                `https://image.tmdb.org/t/p/original${collection.poster_path}`,
-                join(get_library_path(folder), tmdb_movie.collection_id.toString(), POSTER_FILENAME)
-              );
-            }
-          }
-
           console.log(`Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`);
         }
       } catch (error) {
@@ -165,9 +155,16 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
   }
 };
 
+const analyze_tvshows = async (folder: IFolder, { save_images }: IConfig): Promise<void> => {
+  // TODO: Implement TV Shows analysis
+  return;
+};
+
 export const analyze_library = async (folder: IFolder, config: IConfig): Promise<void> => {
   switch (folder.media_type) {
     case EMediaType.Movies:
       await analyze_movies(folder, config);
+    case EMediaType.TvShows:
+      await analyze_tvshows(folder, config);
   }
 };
