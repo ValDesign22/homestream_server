@@ -7,6 +7,7 @@ export interface IConfig {
   tmdb_language: string;
   hardware_acceleration: boolean;
   save_images: boolean;
+  create_collections: boolean;
 }
 
 export interface IFolder {

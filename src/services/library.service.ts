@@ -4,13 +4,19 @@ import { join } from "node:path";
 import { get_collection, get_item, load_store, store_collection, store_item } from "./store.service";
 import { search_collection, search_movie } from "./tmdb.service";
 import { get_config_path } from "./config.service";
-import { BACKDROP_FILENAME, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from "../utils/constants.util";
-import { EImageType, EMediaType, IConfig, IFolder, IMovie, IMovieCollection } from "../utils/types";
+import { BACKDROP_FILENAME, COLLECTIONS_PATH, LIBRARIES_PATH, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from "../utils/constants.util";
+import { EImageType, EMediaType, IConfig, IFolder, IMovie } from "../utils/types";
 
 export const get_library_path = (folder: IFolder): string => {
-  const libraries_path = join(get_config_path(), 'libraries', folder.id.toString());
+  const libraries_path = join(get_config_path(), LIBRARIES_PATH, folder.id.toString());
   if (!existsSync(libraries_path)) mkdirSync(libraries_path, { recursive: true });
   return libraries_path;
+};
+
+const get_collections_path = (): string => {
+  const collections_path = join(get_config_path(), COLLECTIONS_PATH);
+  if (!existsSync(collections_path)) mkdirSync(collections_path, { recursive: true });
+  return collections_path;
 };
 
 const download_image = async (url: string, path: string): Promise<void> => {
@@ -33,7 +39,17 @@ const download_image = async (url: string, path: string): Promise<void> => {
   }
 };
 
-export const get_image = (folder: IFolder, id: number, image_type: EImageType): string | null => {
+const download_images_concurrently = async (images: { url: string, path: string }[]): Promise<void> => {
+  try {
+    await Promise.all(images.map(async ({ url, path }) => {
+      await download_image(url, path);
+    }));
+  } catch (error) {
+    console.error('Failed to download images concurrently:', error);
+  }
+}
+
+export const get_movie_image = (folder: IFolder, id: number, image_type: EImageType): string | null => {
   const item = get_item(folder, id);
   if (!item) return null;
 
@@ -98,6 +114,7 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
   const stack: string[] = [folder.path];
 
   const movies = load_store(folder) as { path: string, metadata: IMovie }[];
+  const images: { url: string, path: string }[] = [];
 
   while (stack.length > 0) {
     const current_path = stack.pop();
@@ -132,18 +149,18 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
 
           const movie = get_item(folder, tmdb_movie.id);
           if (movie && save_images) {
-            if (tmdb_movie.backdrop_path) await download_image(
-              `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
-              join(movie.path, BACKDROP_FILENAME)
-            );
-            if (tmdb_movie.logo_path) await download_image(
-              `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
-              join(movie.path, LOGO_FILENAME)
-            );
-            if (tmdb_movie.poster_path) await download_image(
-              `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
-              join(movie.path, POSTER_FILENAME)
-            );
+            if (tmdb_movie.backdrop_path) images.push({
+              url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
+              path: join(movie.path, BACKDROP_FILENAME)
+            });
+            if (tmdb_movie.logo_path) images.push({
+              url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
+              path: join(movie.path, LOGO_FILENAME)
+            });
+            if (tmdb_movie.poster_path) images.push({
+              url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
+              path: join(movie.path, POSTER_FILENAME)
+            });
           }
 
           console.log(`Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`);
@@ -153,6 +170,49 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
       }
     }
   }
+
+  await download_images_concurrently(images);
+};
+
+const analyze_collections = async (folder: IFolder, { save_images }: IConfig): Promise<void> => {
+  const movies = load_store(folder) as { path: string, metadata: IMovie }[];
+
+  const collections = new Set<number>();
+  const images: { url: string, path: string }[] = [];
+
+  for (const movie of movies) {
+    if (movies.filter((m) => m.metadata.collection_id === movie.metadata.collection_id).length < 2) continue;
+
+    if (movie.metadata.collection_id && !collections.has(movie.metadata.collection_id)) {
+      try {
+        let collection = get_collection(movie.metadata.collection_id);
+        if (!collection) {
+          const tmdb_collection = await search_collection(movie.metadata.collection_id);
+          if (tmdb_collection) {
+            store_collection(tmdb_collection);
+            collection = tmdb_collection;
+          }
+        }
+
+        if (collection && save_images) {
+          if (collection.backdrop_path) images.push({
+            url: `https://image.tmdb.org/t/p/original${collection.backdrop_path}`,
+            path: join(get_collections_path(), collection.id.toString(), BACKDROP_FILENAME)
+          });
+          if (collection.poster_path) images.push({
+            url: `https://image.tmdb.org/t/p/original${collection.poster_path}`,
+            path: join(get_collections_path(), collection.id.toString(), POSTER_FILENAME)
+          });
+        }
+
+        collections.add(movie.metadata.collection_id);
+      } catch (error) {
+        console.error(`Failed to search for collection: ${movie.path}`, error);
+      }
+    }
+  }
+
+  await download_images_concurrently(images);
 };
 
 const analyze_tvshows = async (folder: IFolder, { save_images }: IConfig): Promise<void> => {
@@ -164,6 +224,7 @@ export const analyze_library = async (folder: IFolder, config: IConfig): Promise
   switch (folder.media_type) {
     case EMediaType.Movies:
       await analyze_movies(folder, config);
+      if (config.create_collections) await analyze_collections(folder, config);
     case EMediaType.TvShows:
       await analyze_tvshows(folder, config);
   }

@@ -86,6 +86,7 @@ export class ConfigController {
         tmdb_language,
         hardware_acceleration,
         save_images,
+        create_collections: true,
       });
       return res.status(200).json({ message: 'Config updated successfully' });
     } catch (error) {
