@@ -1,8 +1,8 @@
 import axios from "axios";
 import { load_config } from "./config.service";
-import { IGenre, IMovie, IMovieCollection } from "../utils/types";
-import { distance } from "fastest-levenshtein";
 import { TMDB_API_KEY } from "../utils/constants.util";
+import { IGenre, IMovie, IMovieCollection, ITvShow } from "../utils/types";
+import { distance } from "fastest-levenshtein";
 
 export const tmdb_request = async (path: string, params?: Record<string, string | null>): Promise<any | null> => {
   const config = load_config();
@@ -83,4 +83,40 @@ export const search_collection = async (id: number): Promise<IMovieCollection | 
     poster_path: response.poster_path,
     backdrop_path: response.backdrop_path,
   };
+};
+
+export const search = async (query: string, type: string): Promise<IMovie[] | ITvShow[]> => {
+  const response = await tmdb_request(`/search/${type}`, { query });
+  if (!response || !response.results || response.results.length === 0) return [];
+
+  let results: IMovie[] | ITvShow[] = [];
+
+  switch (type) {
+    case 'movie':
+      results = response.results.map((movie: any) => {
+        return {
+          id: movie.id,
+          collection_id: movie.belongs_to_collection ? movie.belongs_to_collection.id : null,
+          title: movie.title,
+          original_title: movie.original_title,
+          overview: movie.overview,
+          poster_path: movie.poster_path,
+          backdrop_path: movie.backdrop_path,
+          logo_path: movie.logo_path,
+          release_date: movie.release_date,
+          runtime: movie.runtime,
+          genres: movie.genres ? movie.genres.map((genre: any) => {
+            return {
+              id: genre.id,
+              name: genre.name,
+            };
+          }) : [],
+        }
+      });
+      break;
+    default:
+      results = [];
+  }
+
+  return results;
 };

@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
-import { getCollectionById } from '../utils/item';
+import { get_collection } from '../services/store.service';
 
 @Controller('/collection')
 export class CollectionController {
@@ -13,6 +13,8 @@ export class CollectionController {
   })
   public get(req: Request, res: Response) {
     const { id } = req.query;
-    return res.status(200).json(getCollectionById(parseInt(id as string, 10)));
+    const collection = get_collection(parseInt(id as string, 10));
+    if (!collection) return res.status(404).json({ message: 'Collection not found' });
+    return res.status(200).json(collection);
   }
 }

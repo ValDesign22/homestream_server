@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
-import { search } from '../utils/tmdb';
+import { search } from '../services/tmdb.service';
 
 @Controller('/search')
 export class SearchController {

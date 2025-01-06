@@ -2,7 +2,7 @@ import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { readdirSync, statSync } from 'node:fs';
 import { join } from 'path';
-import { load_config } from '../utils/config';
+import { load_config } from '../services/config.service';
 
 interface IFolderItem {
   id: number;

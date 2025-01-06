@@ -151,15 +151,15 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
           if (movie && save_images) {
             if (tmdb_movie.backdrop_path) images.push({
               url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
-              path: join(movie.path, BACKDROP_FILENAME)
+              path: join(movie.path, BACKDROP_FILENAME),
             });
             if (tmdb_movie.logo_path) images.push({
               url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
-              path: join(movie.path, LOGO_FILENAME)
+              path: join(movie.path, LOGO_FILENAME),
             });
             if (tmdb_movie.poster_path) images.push({
               url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
-              path: join(movie.path, POSTER_FILENAME)
+              path: join(movie.path, POSTER_FILENAME),
             });
           }
 
@@ -197,11 +197,11 @@ const analyze_collections = async (folder: IFolder, { save_images }: IConfig): P
         if (collection && save_images) {
           if (collection.backdrop_path) images.push({
             url: `https://image.tmdb.org/t/p/original${collection.backdrop_path}`,
-            path: join(get_collections_path(), collection.id.toString(), BACKDROP_FILENAME)
+            path: join(get_collections_path(), collection.id.toString(), BACKDROP_FILENAME),
           });
           if (collection.poster_path) images.push({
             url: `https://image.tmdb.org/t/p/original${collection.poster_path}`,
-            path: join(get_collections_path(), collection.id.toString(), POSTER_FILENAME)
+            path: join(get_collections_path(), collection.id.toString(), POSTER_FILENAME),
           });
         }
 
