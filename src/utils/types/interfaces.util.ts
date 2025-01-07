@@ -1,4 +1,4 @@
-import { EMediaType } from "./enums.util";
+import { EMediaType } from './enums.util';
 
 export interface IConfig {
   files_folder: string;

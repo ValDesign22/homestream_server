@@ -3,7 +3,7 @@ import { createWriteStream, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { get_collection, get_item, load_store, store_collection, store_item } from './store.service';
 import { search_collection, search_movie } from './providers/tmdb.service';
-import { get_config_path } from './config.service';
+import { get_config_path, load_config } from './config.service';
 import { BACKDROP_FILENAME, COLLECTIONS_PATH, LIBRARIES_PATH, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from '../utils/constants.util';
 import { EImageType, EMediaType } from '../utils/types/enums.util';
 import { IConfig, IFolder, IMovie } from '../utils/types/interfaces.util';
@@ -88,6 +88,20 @@ export const get_movie_image = (folder: IFolder, id: number, image_type: EImageT
       return null;
   }
 };
+
+export const get_movie = (id: number): IMovie | null => {
+  const config = load_config();
+  if (!config) return null;
+
+  for (const folder of config.folders) {
+    if (folder.media_type === EMediaType.Movies) {
+      const movie = get_item(folder, id);
+      if (movie) return movie.metadata as IMovie;
+    }
+  }
+
+  return null;
+}
 
 const parse_movie_filename = (filename: string): { title: string, year: string | null } => {
   const regex = /^(.*?)(?:\s+(\d{4}))?$/;

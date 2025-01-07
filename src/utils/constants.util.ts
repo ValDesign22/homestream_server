@@ -1,6 +1,7 @@
 export const BACKDROP_FILENAME = 'backdrop.jpg';
 export const CONFIG_FILENAME = 'config.yml';
 export const COLLECTIONS_PATH = 'collections';
+export const HLS_OUTPUT_DIR = 'hls';
 export const LIBRARIES_PATH = 'libraries';
 export const LOGO_FILENAME = 'logo.png';
 export const METADATA_FILENAME = 'metadata.yml';
