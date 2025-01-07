@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
-import { search } from '../services/tmdb.service';
+import { tmdb_search } from '../services/providers/tmdb.service';
 
 @Controller('/search')
 export class SearchController {
@@ -18,7 +18,7 @@ export class SearchController {
   })
   public async get(req: Request, res: Response) {
     const { query, type } = req.query;
-    const results = await search(query as string, type as string);
+    const results = await tmdb_search(query as string, type as string);
     return res.status(200).json(results);
   }
 }

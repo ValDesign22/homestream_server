@@ -24,13 +24,12 @@
   "dependencies": {
     "@nuxum/core": "^1.0.4",
     "axios": "^1.7.9",
-    "chalk": "4.1.2",
     "chokidar": "^4.0.3",
     "dotenv": "^16.4.7",
     "fastest-levenshtein": "^1.0.16",
     "fluent-ffmpeg": "^2.1.3",
     "reflect-metadata": "^0.2.2",
-    "tar": "^7.4.3",
+    "winston": "^3.17.0",
     "ws": "^8.18.0",
     "yaml": "^2.7.0"
   },

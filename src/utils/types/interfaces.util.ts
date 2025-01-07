@@ -1,11 +1,9 @@
+import { EMediaType } from "./enums.util";
+
 export interface IConfig {
-  app_storage_path: string;
   files_folder: string;
-  watch_dir?: string;
   folders: IFolder[];
-  tmdb_api_key: string;
   tmdb_language: string;
-  hardware_acceleration: boolean;
   save_images: boolean;
   create_collections: boolean;
 }
@@ -75,75 +73,4 @@ export interface ITvShowEpisode {
 export interface IGenre {
   id: number,
   name: string,
-}
-
-export interface IImagesResponse {
-  backdrop_path: string | null,
-  logo_path: string | null,
-  poster_path: string | null,
-}
-
-export enum EMediaType {
-  Movies,
-  TvShows,
-  Music,
-  Other,
-}
-
-export interface IProfile {
-  id: number,
-  name: string,
-  password?: string,
-  role: ERole,
-  history: IHistory[],
-  watchlist: (IMovie | ITvShow)[],
-  favorites: (IMovie | ITvShow)[],
-}
-
-export enum ERole {
-  Admin,
-  User,
-}
-
-export interface IHistory {
-  id: number,
-  date: string,
-  title: string,
-  media_type: EMediaType,
-  watched: boolean,
-  progress: number,
-}
-
-export interface INotification {
-  profile_id: number,
-  media_type: EMediaType,
-  notification_type: ENotificationType,
-  data: IMovie | ITvShow,
-}
-
-export enum ENotificationType {
-  Watchlist,
-  Favorites,
-}
-
-export interface ITracks {
-  audios: ITrack[],
-  subtitles: ITrack[],
-}
-
-export interface ITrack {
-  index: number,
-  codec_name?: string,
-  codec_type?: string,
-  channel_layout?: string,
-  language: string,
-  handler_name?: string,
-  default?: boolean,
-  url?: string,
-}
-
-export enum EImageType {
-  Backdrop,
-  Logo,
-  Poster,
 }

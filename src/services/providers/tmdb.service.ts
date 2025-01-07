@@ -1,8 +1,9 @@
-import axios from "axios";
-import { load_config } from "./config.service";
-import { TMDB_API_KEY } from "../utils/constants.util";
-import { IGenre, IMovie, IMovieCollection, ITvShow } from "../utils/types";
-import { distance } from "fastest-levenshtein";
+import axios from 'axios';
+import { load_config } from '../config.service';
+import { TMDB_API_KEY } from '../../utils/constants.util';
+import { IGenre, IMovie, IMovieCollection, ITvShow } from '../../utils/types/interfaces.util';
+import { distance } from 'fastest-levenshtein';
+import logger from '../logger.service';
 
 export const tmdb_request = async (path: string, params?: Record<string, string | null>): Promise<any | null> => {
   const config = load_config();
@@ -25,7 +26,7 @@ export const tmdb_request = async (path: string, params?: Record<string, string 
     if (response.status !== 200) return null;
     return response.data;
   } catch (error) {
-    console.error('Failed to make request to TMDB:', error);
+    logger.error('Failed to make request to TMDB:', error);
     return null;
   }
 };
@@ -85,7 +86,7 @@ export const search_collection = async (id: number): Promise<IMovieCollection | 
   };
 };
 
-export const search = async (query: string, type: string): Promise<IMovie[] | ITvShow[]> => {
+export const tmdb_search = async (query: string, type: string): Promise<IMovie[] | ITvShow[]> => {
   const response = await tmdb_request(`/search/${type}`, { query });
   if (!response || !response.results || response.results.length === 0) return [];
 

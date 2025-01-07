@@ -1,11 +1,13 @@
-import axios from "axios";
-import { createWriteStream, existsSync, mkdirSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { get_collection, get_item, load_store, store_collection, store_item } from "./store.service";
-import { search_collection, search_movie } from "./tmdb.service";
-import { get_config_path } from "./config.service";
-import { BACKDROP_FILENAME, COLLECTIONS_PATH, LIBRARIES_PATH, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from "../utils/constants.util";
-import { EImageType, EMediaType, IConfig, IFolder, IMovie } from "../utils/types";
+import axios from 'axios';
+import { createWriteStream, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { get_collection, get_item, load_store, store_collection, store_item } from './store.service';
+import { search_collection, search_movie } from './providers/tmdb.service';
+import { get_config_path } from './config.service';
+import { BACKDROP_FILENAME, COLLECTIONS_PATH, LIBRARIES_PATH, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from '../utils/constants.util';
+import { EImageType, EMediaType } from '../utils/types/enums.util';
+import { IConfig, IFolder, IMovie } from '../utils/types/interfaces.util';
+import logger from './logger.service';
 
 export const get_library_path = (folder: IFolder): string => {
   const libraries_path = join(get_config_path(), LIBRARIES_PATH, folder.id.toString());
@@ -35,7 +37,7 @@ const download_image = async (url: string, path: string): Promise<void> => {
       writer.on('error', reject);
     });
   } catch (error) {
-    console.error(`Failed to download image from URL: ${url}`, error);
+    logger.error(`Failed to download image from URL: ${url}`, error);
   }
 };
 
@@ -45,7 +47,7 @@ const download_images_concurrently = async (images: { url: string, path: string 
       await download_image(url, path);
     }));
   } catch (error) {
-    console.error('Failed to download images concurrently:', error);
+    logger.error('Failed to download images concurrently:', error);
   }
 }
 
@@ -137,7 +139,7 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
       const { title, year } = parse_movie_filename(filename);
       const full_path = join(current_path, item.name);
 
-      console.log(`Analyzing movie: ${full_path}\n${title} (${year || 'Unknown Year'})`);
+      logger.info(`Analyzing movie: ${full_path}\n${title} (${year || 'Unknown Year'})`);
 
       try {
         const tmdb_movie = await search_movie(title, year);
@@ -163,10 +165,10 @@ const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promis
             });
           }
 
-          console.log(`Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`);
+          logger.info(`Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`);
         }
       } catch (error) {
-        console.error(`Failed to search for movie: ${full_path}\n${title} (${year || 'Unknown Year'})`, error);
+        logger.error(`Failed to search for movie: ${full_path}\n${title} (${year || 'Unknown Year'})`, error);
       }
     }
   }

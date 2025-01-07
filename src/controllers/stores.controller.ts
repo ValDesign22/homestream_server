@@ -2,7 +2,7 @@ import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { load_config } from '../services/config.service';
 import { load_store } from '../services/store.service';
-import { IMovie, ITvShow } from '../utils/types';
+import { IMovie, ITvShow } from '../utils/types/interfaces.util';
 
 @Controller('/stores')
 export class StoresController {

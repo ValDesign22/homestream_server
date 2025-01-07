@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { load_config } from '../services/config.service';
-import { tmdb_request } from '../services/tmdb.service';
+import { tmdb_request } from '../services/providers/tmdb.service';
 
 @Controller('/test')
 export class TestController {

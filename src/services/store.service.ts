@@ -1,10 +1,12 @@
-import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
-import { get_library_path } from "./library.service";
-import { COLLECTIONS_PATH, METADATA_FILENAME } from "../utils/constants.util";
-import { EMediaType, IFolder, IMovie, IMovieCollection, ITvShow } from "../utils/types";
-import { get_config_path } from "./config.service";
+import { get_library_path } from './library.service';
+import { COLLECTIONS_PATH, METADATA_FILENAME } from '../utils/constants.util';
+import { EMediaType } from '../utils/types/enums.util';
+import { IFolder, IMovie, IMovieCollection, ITvShow } from '../utils/types/interfaces.util';
+import { get_config_path } from './config.service';
+import logger from './logger.service';
 
 export const get_item = (folder: IFolder, id: number): { path: string, metadata: IMovie | ITvShow } | null => {
   try {
@@ -31,7 +33,7 @@ export const get_item = (folder: IFolder, id: number): { path: string, metadata:
         return null;
     }
   } catch (err) {
-    console.error(`Failed to get item with ID ${id}:`, err);
+    logger.error(`Failed to get item with ID ${id}:`, err);
     return null;
   }
 };
@@ -51,7 +53,7 @@ export const get_collection = (id: number): IMovieCollection | null => {
 
     return metadata as IMovieCollection;
   } catch (err) {
-    console.error(`Failed to get collection with ID ${id}:`, err);
+    logger.error(`Failed to get collection with ID ${id}:`, err);
     return null;
   }
 };
@@ -67,7 +69,7 @@ export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
 
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
-    console.error(`Failed to store item with ID ${item.id}:`, err);
+    logger.error(`Failed to store item with ID ${item.id}:`, err);
   }
 };
 
@@ -80,20 +82,19 @@ export const store_collection = (collection: IMovieCollection): void => {
 
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
-    console.error(`Failed to store collection with ID ${collection.id}:`, err);
+    logger.error(`Failed to store collection with ID ${collection.id}:`, err);
   }
 };
 
 export const load_store = (folder: IFolder): { path: string, metadata: IMovie | ITvShow }[] => {
+  const store = [];
   try {
-    const store = [];
     for (const id of readdirSync(get_library_path(folder))) {
       const item = get_item(folder, parseInt(id));
       if (item) store.push({ path: item.path, metadata: item.metadata });
     }
-    return store;
   } catch (err) {
-    console.error(`Failed to load store for folder with ID ${folder.id}:`, err);
-    return [];
+    logger.error(`Failed to load store for folder with ID ${folder.id}:`, err);
   }
+  return store;
 };
