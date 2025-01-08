@@ -2,13 +2,13 @@ import { Controller, Get } from '@nuxum/core';
 import { existsSync, rmdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { Request, Response } from 'express';
-import { get_movie } from '../../services/library.service';
+import { get_movie } from '../../services/library/movie.service';
 import logger from '../../services/logger.service';
 import { HLS_OUTPUT_DIR } from '../../utils/constants.util';
 import { create_hls_stream } from '../../services/stream.service';
 
-@Controller('/video/movie')
-export class MovieVideoController {
+@Controller('/playback/music')
+export class MusicPlaybackController {
   @Get({
     query: [{
       type: 'number',

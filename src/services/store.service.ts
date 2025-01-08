@@ -1,11 +1,10 @@
 import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
-import { get_library_path } from './library.service';
-import { COLLECTIONS_PATH, METADATA_FILENAME } from '../utils/constants.util';
+import { get_library_path } from './library/index';
+import { METADATA_FILENAME } from '../utils/constants.util';
 import { EMediaType } from '../utils/types/enums.util';
-import { IFolder, IMovie, IMovieCollection, ITvShow } from '../utils/types/interfaces.util';
-import { get_config_path } from './config.service';
+import { IFolder, IMovie, ITvShow } from '../utils/types/interfaces.util';
 import logger from './logger.service';
 
 export const get_item = (folder: IFolder, id: number): { path: string, metadata: IMovie | ITvShow } | null => {
@@ -38,26 +37,6 @@ export const get_item = (folder: IFolder, id: number): { path: string, metadata:
   }
 };
 
-export const get_collection = (id: number): IMovieCollection | null => {
-  try {
-    const collections_path = join(get_config_path(), COLLECTIONS_PATH);
-    if (!existsSync(collections_path)) mkdirSync(collections_path, { recursive: true });
-    const collection_path = join(collections_path, id.toString());
-    if (!existsSync(collection_path)) mkdirSync(collection_path, { recursive: true });
-    const metadata_path = join(collection_path, METADATA_FILENAME);
-
-    if (!existsSync(metadata_path)) return null;
-
-    const metadataContent = readFileSync(metadata_path, 'utf-8');
-    const metadata = parse(metadataContent);
-
-    return metadata as IMovieCollection;
-  } catch (err) {
-    logger.error(`Failed to get collection with ID ${id}:`, err);
-    return null;
-  }
-};
-
 export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
   try {
     const item_path = join(get_library_path(folder), item.id.toString());
@@ -70,19 +49,6 @@ export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
     logger.error(`Failed to store item with ID ${item.id}:`, err);
-  }
-};
-
-export const store_collection = (collection: IMovieCollection): void => {
-  try {
-    const collections_path = join(get_config_path(), 'collections');
-    if (!existsSync(collections_path)) mkdirSync(collections_path, { recursive: true });
-    const metadata_path = join(collections_path, collection.id.toString(), METADATA_FILENAME);
-    const metadataContent = stringify(collection);
-
-    writeFileSync(metadata_path, metadataContent);
-  } catch (err) {
-    logger.error(`Failed to store collection with ID ${collection.id}:`, err);
   }
 };
 
