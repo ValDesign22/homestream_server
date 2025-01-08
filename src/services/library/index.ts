@@ -1,10 +1,14 @@
 import { createWriteStream, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import axios from "axios";
+import { analyze_collections } from "./collection.service";
+import { analyze_movies } from "./movie.service";
+import { analyze_tvshows } from "./tv.service";
 import { get_config_path } from "../config.service";
 import logger from "../logger.service";
 import { LIBRARIES_PATH } from "../../utils/constants.util";
-import { IFolder } from "../../utils/types/interfaces.util";
+import { EMediaType } from "../../utils/types/enums.util";
+import { IConfig, IFolder } from "../../utils/types/interfaces.util";
 
 export const get_library_path = (folder: IFolder): string => {
   const libraries_path = join(get_config_path(), LIBRARIES_PATH, folder.id.toString());
@@ -41,3 +45,13 @@ export const download_images_concurrently = async (images: { url: string, path: 
     logger.error('Failed to download images concurrently:', error);
   }
 }
+
+export const analyze_library = async (folder: IFolder, config: IConfig): Promise<void> => {
+  switch (folder.media_type) {
+    case EMediaType.Movies:
+      await analyze_movies(folder, config);
+      if (config.create_collections) await analyze_collections(folder, config);
+    case EMediaType.TvShows:
+      await analyze_tvshows(folder, config);
+  }
+};

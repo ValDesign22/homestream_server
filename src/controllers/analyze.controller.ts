@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
 import { load_config } from '../services/config.service';
-import { analyze_library } from '../services/library.service';
+import { analyze_library } from '../services/library';
 
 @Controller('/analyze')
 export class AnalyzeController {
