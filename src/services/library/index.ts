@@ -36,8 +36,14 @@ export const download_image = async (
     response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
-      writer.on('finish', resolve);
-      writer.on('error', reject);
+      writer.on('finish', () => {
+        logger.info(`Downloaded image from URL: ${url}`);
+        resolve();
+      });
+      writer.on('error', (error) => {
+        logger.error(`Failed to download image from URL: ${url}`, error);
+        reject(error);
+      });
     });
   } catch (error) {
     logger.error(`Failed to download image from URL: ${url}`, error);

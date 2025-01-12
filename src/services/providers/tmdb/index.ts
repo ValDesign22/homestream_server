@@ -31,7 +31,8 @@ export const tmdb_request = async (
     if (response.status !== 200) return null;
     return response.data;
   } catch (error) {
-    logger.error('Failed to make request to TMDB:', error);
+    logger.error('Failed to make request to TMDB:');
+    logger.error(error);
     return null;
   }
 };

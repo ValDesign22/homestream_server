@@ -373,12 +373,18 @@ export const analyze_tvshows = async (
           episodes: [...tvshow_season.metadata.episodes, tmdb_episode],
         });
 
+        const edited_season = get_tvshow_season(
+          tmdb_tvshow.id,
+          tmdb_season.season_number,
+        );
+        if (!edited_season) continue;
+
         store_item(folder, {
           ...tvshow.metadata,
-          seasons: tvshow.metadata.seasons.map((s) =>
-            s.season_number === tmdb_season.season_number
-              ? { ...s, episodes: [...s.episodes, tmdb_episode] }
-              : s,
+          seasons: tvshow.metadata.seasons.map((season) =>
+            season.season_number === tmdb_season.season_number
+              ? edited_season.metadata
+              : season,
           ),
         });
 
