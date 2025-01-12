@@ -79,7 +79,6 @@ export const tmdb_search = async (
           overview: tv_show.overview,
           poster_path: tv_show.poster_path,
           backdrop_path: tv_show.backdrop_path,
-          file_path: null,
           logo_path: null,
           genres: tv_show.genres
             ? tv_show.genres.map((genre: ITmdbGenre) => {

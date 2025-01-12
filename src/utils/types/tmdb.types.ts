@@ -99,6 +99,7 @@ export interface ITmdbTvShowSeason {
   season_number: number;
   vote_average: number;
   vote_count: number;
+  images: ITmdbImages;
 }
 
 export interface ITmdbGenre {
@@ -129,10 +130,10 @@ export interface ITmdbSpokenLanguage {
 }
 
 export interface ITmdbImages {
-  backdrops: ITmdbImage[];
-  logos: ITmdbImage[];
-  posters: ITmdbImage[];
-  stills: ITmdbImage[];
+  backdrops?: ITmdbImage[];
+  logos?: ITmdbImage[];
+  posters?: ITmdbImage[];
+  stills?: ITmdbImage[];
 }
 
 export interface ITmdbImage {

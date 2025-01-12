@@ -1,7 +1,7 @@
 import { distance } from 'fastest-levenshtein';
 import { tmdb_request } from '#/services/providers/tmdb/index';
 import { IGenre, IMovie } from '#/utils/types/interfaces.util';
-import { ITmdbGenre } from '#/utils/types/tmdb.types';
+import { ITmdbGenre, ITmdbMovie } from '#/utils/types/tmdb.types';
 
 export const search_movie = async (
   title: string,
@@ -23,9 +23,9 @@ export const search_movie = async (
 
   const movie_id = best_match.id;
 
-  const movie_response = await tmdb_request(`/movie/${movie_id}`, {
+  const movie_response = (await tmdb_request(`/movie/${movie_id}`, {
     append_to_response: 'images',
-  });
+  })) as ITmdbMovie | null;
   if (!movie_response) return null;
 
   const genres: IGenre[] = movie_response.genres
@@ -48,7 +48,7 @@ export const search_movie = async (
     poster_path: movie_response.poster_path,
     backdrop_path: movie_response.backdrop_path,
     logo_path:
-      movie_response.images.logos.length > 0
+      movie_response.images.logos && movie_response.images.logos.length > 0
         ? movie_response.images.logos[0].file_path
         : null,
     release_date: movie_response.release_date,

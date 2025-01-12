@@ -18,7 +18,7 @@ export interface IFolder {
 
 export interface IMovie {
   id: number;
-  collection_id: number;
+  collection_id: number | null;
   title: string;
   original_title: string;
   overview: string;
