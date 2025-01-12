@@ -1,17 +1,18 @@
 import { EMediaType } from './enums.util';
 
 export interface IConfig {
-  files_folder: string;
-  folders: IFolder[];
-  tmdb_language: string;
-  save_images: boolean;
-  create_collections: boolean;
+  files_folder: string,
+  folders: IFolder[],
+  tmdb_language: string,
+  save_images: boolean,
+  create_collections: boolean,
 }
 
 export interface IFolder {
   id: number,
   name: string,
   path: string,
+  generate_trickplay: boolean,
   media_type: EMediaType,
 }
 
