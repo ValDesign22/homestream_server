@@ -14,12 +14,10 @@
     "start:prod": "pm2 start dist/index.js --name HomeStream",
     "stop:prod": "pm2 stop HomeStream",
     "restart:prod": "pm2 restart HomeStream",
-    "lint": "prettier . --write",
     "prepare": "husky"
   },
   "lint-staged": {
     "**/*": [
-      "eslint --fix",
       "prettier --write --ignore-unknown"
     ]
   },

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { load_config } from '../../config.service';
 import logger from '../../logger.service';
 import { TMDB_API_KEY } from '../../../utils/constants.util';
@@ -12,7 +12,7 @@ import {
 export const tmdb_request = async (
   path: string,
   params?: Record<string, string | null>,
-): Promise<any | null> => {
+): Promise<AxiosResponse['data'] | null> => {
   const config = load_config();
   if (!config) return null;
   try {
