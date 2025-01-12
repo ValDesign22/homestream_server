@@ -66,7 +66,9 @@ export const analyze_library = async (
     case EMediaType.Movies:
       await analyze_movies(folder, config);
       if (config.create_collections) await analyze_collections(folder, config);
+      break;
     case EMediaType.TvShows:
       await analyze_tvshows(folder, config);
+      break;
   }
 };

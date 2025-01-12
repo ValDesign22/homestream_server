@@ -3,6 +3,11 @@ import { load_config } from '../../config.service';
 import logger from '../../logger.service';
 import { TMDB_API_KEY } from '../../../utils/constants.util';
 import { IMovie, ITvShow } from '../../../utils/types/interfaces.util';
+import {
+  ITmdbGenre,
+  ITmdbMovie,
+  ITmdbTvShow,
+} from '../../../utils/types/tmdb.types';
 
 export const tmdb_request = async (
   path: string,
@@ -45,7 +50,7 @@ export const tmdb_search = async (
 
   switch (type) {
     case 'movie':
-      return response.results.map((movie: any) => {
+      return response.results.map((movie: ITmdbMovie) => {
         return {
           id: movie.id,
           collection_id: movie.belongs_to_collection
@@ -60,7 +65,7 @@ export const tmdb_search = async (
           release_date: movie.release_date,
           runtime: movie.runtime,
           genres: movie.genres
-            ? movie.genres.map((genre: any) => {
+            ? movie.genres.map((genre: ITmdbGenre) => {
                 return {
                   id: genre.id,
                   name: genre.name,
@@ -70,7 +75,7 @@ export const tmdb_search = async (
         };
       }) as IMovie[];
     case 'tv':
-      return response.results.map((tv_show: any) => {
+      return response.results.map((tv_show: ITmdbTvShow) => {
         return {
           id: tv_show.id,
           title: tv_show.name,
@@ -81,7 +86,7 @@ export const tmdb_search = async (
           file_path: null,
           logo_path: null,
           genres: tv_show.genres
-            ? tv_show.genres.map((genre: any) => {
+            ? tv_show.genres.map((genre: ITmdbGenre) => {
                 return {
                   id: genre.id,
                   name: genre.name,

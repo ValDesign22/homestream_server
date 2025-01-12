@@ -28,7 +28,7 @@ export const search_movie = async (
   if (!movie_response) return null;
 
   const genres: IGenre[] = movie_response.genres
-    ? movie_response.genres.map((genre: any) => {
+    ? movie_response.genres.map((genre: { id: number; name: string }) => {
         return {
           id: genre.id,
           name: genre.name,
