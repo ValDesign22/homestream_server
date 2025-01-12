@@ -5,7 +5,7 @@ export const search = async (query: string, type: string): Promise<IMovie[] | IT
   switch (type) {
     case 'movie':
     case 'tv':
-      await tmdb_search(query, type);
+      return await tmdb_search(query, type);
     default:
       return [];
   }

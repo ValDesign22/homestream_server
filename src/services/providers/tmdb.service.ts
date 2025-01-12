@@ -90,11 +90,9 @@ export const tmdb_search = async (query: string, type: string): Promise<IMovie[]
   const response = await tmdb_request(`/search/${type}`, { query });
   if (!response || !response.results || response.results.length === 0) return [];
 
-  let results: IMovie[] | ITvShow[] = [];
-
   switch (type) {
     case 'movie':
-      results = response.results.map((movie: any) => {
+      return response.results.map((movie: any) => {
         return {
           id: movie.id,
           collection_id: movie.belongs_to_collection ? movie.belongs_to_collection.id : null,
@@ -103,7 +101,7 @@ export const tmdb_search = async (query: string, type: string): Promise<IMovie[]
           overview: movie.overview,
           poster_path: movie.poster_path,
           backdrop_path: movie.backdrop_path,
-          logo_path: movie.logo_path,
+          logo_path: null,
           release_date: movie.release_date,
           runtime: movie.runtime,
           genres: movie.genres ? movie.genres.map((genre: any) => {
@@ -113,11 +111,27 @@ export const tmdb_search = async (query: string, type: string): Promise<IMovie[]
             };
           }) : [],
         }
-      });
-      break;
+      }) as IMovie[];
+    case 'tv':
+      return response.results.map((tv_show: any) => {
+        return {
+          id: tv_show.id,
+          title: tv_show.name,
+          original_title: tv_show.original_name,
+          overview: tv_show.overview,
+          poster_path: tv_show.poster_path,
+          backdrop_path: tv_show.backdrop_path, file_path: null,
+          logo_path: null,
+          genres: tv_show.genres ? tv_show.genres.map((genre: any) => {
+            return {
+              id: genre.id,
+              name: genre.name,
+            };
+          }) : [],
+          seasons: [],
+        }
+      }) as ITvShow[];
     default:
-      results = [];
+      return [];
   }
-
-  return results;
 };
