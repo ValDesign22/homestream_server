@@ -1,4 +1,10 @@
-import { mkdirSync, existsSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import {
+  mkdirSync,
+  existsSync,
+  writeFileSync,
+  readFileSync,
+  readdirSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import { get_library_path } from './library/index';
@@ -7,7 +13,10 @@ import { EMediaType } from '../utils/types/enums.util';
 import { IFolder, IMovie, ITvShow } from '../utils/types/interfaces.util';
 import logger from './logger.service';
 
-export const get_item = (folder: IFolder, id: number): { path: string, metadata: IMovie | ITvShow } | null => {
+export const get_item = (
+  folder: IFolder,
+  id: number,
+): { path: string; metadata: IMovie | ITvShow } | null => {
   try {
     const item_path = join(get_library_path(folder), id.toString());
     const metadata_path = join(item_path, METADATA_FILENAME);
@@ -52,7 +61,9 @@ export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
   }
 };
 
-export const load_store = (folder: IFolder): { path: string, metadata: IMovie | ITvShow }[] => {
+export const load_store = (
+  folder: IFolder,
+): { path: string; metadata: IMovie | ITvShow }[] => {
   const store = [];
   try {
     for (const id of readdirSync(get_library_path(folder))) {

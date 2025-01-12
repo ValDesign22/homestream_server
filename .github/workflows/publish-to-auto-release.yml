@@ -1,4 +1,4 @@
-name: "publish"
+name: 'publish'
 
 on:
   push:
@@ -32,7 +32,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           name: HomeStream Server ${{ github.ref }}
-          body: "New release of HomeStream Server ${{ github.ref }}"
+          body: 'New release of HomeStream Server ${{ github.ref }}'
           files: ./update.tar.gz
           generate_release_notes: true
           draft: true

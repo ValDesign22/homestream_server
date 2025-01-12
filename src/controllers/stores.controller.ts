@@ -9,8 +9,12 @@ export class StoresController {
   @Get()
   public get(_: Request, res: Response) {
     const config = load_config()!;
-    const stores: Record<string, { path: string, metadata: IMovie | ITvShow }[]> = {};
-    for (const folder of config.folders) stores[folder.name] = load_store(folder);
+    const stores: Record<
+      string,
+      { path: string; metadata: IMovie | ITvShow }[]
+    > = {};
+    for (const folder of config.folders)
+      stores[folder.name] = load_store(folder);
     return res.status(200).json(stores);
   }
 }

@@ -16,7 +16,8 @@ export class FoldersController {
   @Get()
   public get(_: Request, res: Response) {
     const { files_folder } = load_config()!;
-    if (!files_folder) return res.status(500).json({ message: 'Files folder not set' });
+    if (!files_folder)
+      return res.status(500).json({ message: 'Files folder not set' });
 
     let lastId = 0;
 
@@ -24,10 +25,13 @@ export class FoldersController {
       id: ++lastId,
       name,
       path,
-      children: []
+      children: [],
     });
 
-    const root = createFolder(files_folder.split('/').pop() || '', files_folder);
+    const root = createFolder(
+      files_folder.split('/').pop() || '',
+      files_folder,
+    );
     const stack: IFolderItem[] = [root];
 
     while (stack.length) {
@@ -47,7 +51,8 @@ export class FoldersController {
         }
       }
 
-      if (current.children && current.children.length === 0) delete current.children;
+      if (current.children && current.children.length === 0)
+        delete current.children;
     }
 
     return res.status(200).json(root.children);

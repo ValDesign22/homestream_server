@@ -13,7 +13,14 @@
     "start:dev": "ts-node src/index.ts",
     "start:prod": "pm2 start dist/index.js --name HomeStream",
     "stop:prod": "pm2 stop HomeStream",
-    "restart:prod": "pm2 restart HomeStream"
+    "restart:prod": "pm2 restart HomeStream",
+    "lint": "prettier . --write",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*": [
+      "prettier --write --ignore-unknown"
+    ]
   },
   "author": "ValDesign",
   "repository": {
@@ -38,7 +45,10 @@
     "@types/fluent-ffmpeg": "2.1.27",
     "@types/node": "^22.10.5",
     "@types/ws": "^8.5.13",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
     "nodemon": "^3.1.9",
+    "prettier": "3.4.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }

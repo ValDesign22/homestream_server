@@ -1,7 +1,10 @@
-import { IMovie, ITvShow } from "../../utils/types/interfaces.util";
-import { tmdb_search } from "./tmdb.service";
+import { IMovie, ITvShow } from '../../utils/types/interfaces.util';
+import { tmdb_search } from './tmdb/index';
 
-export const search = async (query: string, type: string): Promise<IMovie[] | ITvShow[]> => {
+export const search = async (
+  query: string,
+  type: string,
+): Promise<IMovie[] | ITvShow[]> => {
   switch (type) {
     case 'movie':
     case 'tv':

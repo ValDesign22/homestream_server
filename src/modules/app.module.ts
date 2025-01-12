@@ -9,8 +9,13 @@ import { MoviePlaybackController } from '../controllers/playback/movie.controlle
 
 @Module({
   controllers: [
-    AnalyzeController, CollectionController, FoldersController, MoviePlaybackController,
-    SearchController, StoresController, TestController,
-  ]
+    AnalyzeController,
+    CollectionController,
+    FoldersController,
+    MoviePlaybackController,
+    SearchController,
+    StoresController,
+    TestController,
+  ],
 })
-export class AppModule { }
+export class AppModule {}

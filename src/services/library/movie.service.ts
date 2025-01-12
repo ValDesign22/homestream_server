@@ -1,15 +1,24 @@
-import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { load_config } from "../config.service";
-import { get_item, load_store, store_item } from "../store.service";
-import { BACKDROP_FILENAME, LOGO_FILENAME, POSTER_FILENAME, VIDEO_EXTENSIONS } from "../../utils/constants.util";
-import { EImageType, EMediaType } from "../../utils/types/enums.util";
-import { IConfig, IFolder, IMovie } from "../../utils/types/interfaces.util";
-import logger from "../logger.service";
-import { search_movie } from "../providers/tmdb.service";
-import { download_images_concurrently } from ".";
+import { existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { load_config } from '../config.service';
+import { get_item, load_store, store_item } from '../store.service';
+import {
+  BACKDROP_FILENAME,
+  LOGO_FILENAME,
+  POSTER_FILENAME,
+  VIDEO_EXTENSIONS,
+} from '../../utils/constants.util';
+import { EImageType, EMediaType } from '../../utils/types/enums.util';
+import { IConfig, IFolder, IMovie } from '../../utils/types/interfaces.util';
+import logger from '../logger.service';
+import { search_movie } from '../providers/tmdb/movie.service';
+import { download_images_concurrently } from '.';
 
-export const get_movie_image = (folder: IFolder, id: number, image_type: EImageType): string | null => {
+export const get_movie_image = (
+  folder: IFolder,
+  id: number,
+  image_type: EImageType,
+): string | null => {
   const item = get_item(folder, id);
   if (!item) return null;
 
@@ -19,7 +28,7 @@ export const get_movie_image = (folder: IFolder, id: number, image_type: EImageT
       ? BACKDROP_FILENAME
       : image_type === EImageType.Logo
         ? LOGO_FILENAME
-        : POSTER_FILENAME
+        : POSTER_FILENAME,
   );
 
   const exists = existsSync(image_path);
@@ -61,7 +70,9 @@ export const get_movie = (id: number): IMovie | null => {
   return null;
 };
 
-const parse_movie_filename = (filename: string): { title: string, year: string | null } => {
+const parse_movie_filename = (
+  filename: string,
+): { title: string; year: string | null } => {
   const regex = /^(.*?)(?:\s+(\d{4}))?$/;
   const match = filename.match(regex);
 
@@ -73,11 +84,14 @@ const parse_movie_filename = (filename: string): { title: string, year: string |
   return { title, year };
 };
 
-export const analyze_movies = async (folder: IFolder, { save_images }: IConfig): Promise<void> => {
+export const analyze_movies = async (
+  folder: IFolder,
+  { save_images }: IConfig,
+): Promise<void> => {
   const stack: string[] = [folder.path];
 
-  const movies = load_store(folder) as { path: string, metadata: IMovie }[];
-  const images: { url: string, path: string }[] = [];
+  const movies = load_store(folder) as { path: string; metadata: IMovie }[];
+  const images: { url: string; path: string }[] = [];
 
   while (stack.length > 0) {
     const current_path = stack.pop();
@@ -87,49 +101,64 @@ export const analyze_movies = async (folder: IFolder, { save_images }: IConfig):
 
     for (const item of items) {
       if (item.isDirectory()) {
-        if (item.name !== '.' && item.name !== '..') stack.push(join(current_path, item.name));
+        if (item.name !== '.' && item.name !== '..')
+          stack.push(join(current_path, item.name));
         continue;
       }
 
-      if (!VIDEO_EXTENSIONS.includes(item.name.split('.').pop() as string)) continue;
+      if (!VIDEO_EXTENSIONS.includes(item.name.split('.').pop() as string))
+        continue;
 
-      const existing_movie = movies.find((movie) => movie.metadata.path === current_path);
+      const existing_movie = movies.find(
+        (movie) => movie.metadata.path === current_path,
+      );
       if (existing_movie) continue;
 
       const filename = item.name.split('.').shift() as string;
       const { title, year } = parse_movie_filename(filename);
       const full_path = join(current_path, item.name);
 
-      logger.info(`Analyzing movie: ${full_path}\n${title} (${year || 'Unknown Year'})`);
+      logger.info(
+        `Analyzing movie: ${full_path}\n${title} (${year || 'Unknown Year'})`,
+      );
 
       try {
         const tmdb_movie = await search_movie(title, year);
         if (tmdb_movie) {
-          if (!get_item(folder, tmdb_movie.id)) store_item(folder, {
-            ...tmdb_movie,
-            path: full_path,
-          });
+          if (!get_item(folder, tmdb_movie.id))
+            store_item(folder, {
+              ...tmdb_movie,
+              path: full_path,
+            });
 
           const movie = get_item(folder, tmdb_movie.id);
           if (movie && save_images) {
-            if (tmdb_movie.backdrop_path) images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
-              path: join(movie.path, BACKDROP_FILENAME),
-            });
-            if (tmdb_movie.logo_path) images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
-              path: join(movie.path, LOGO_FILENAME),
-            });
-            if (tmdb_movie.poster_path) images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
-              path: join(movie.path, POSTER_FILENAME),
-            });
+            if (tmdb_movie.backdrop_path)
+              images.push({
+                url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
+                path: join(movie.path, BACKDROP_FILENAME),
+              });
+            if (tmdb_movie.logo_path)
+              images.push({
+                url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
+                path: join(movie.path, LOGO_FILENAME),
+              });
+            if (tmdb_movie.poster_path)
+              images.push({
+                url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
+                path: join(movie.path, POSTER_FILENAME),
+              });
           }
 
-          logger.info(`Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`);
+          logger.info(
+            `Analyzed movie: ${full_path}\n${tmdb_movie.title} (${tmdb_movie.release_date.split('-')[0]})`,
+          );
         }
       } catch (error) {
-        logger.error(`Failed to search for movie: ${full_path}\n${title} (${year || 'Unknown Year'})`, error);
+        logger.error(
+          `Failed to search for movie: ${full_path}\n${title} (${year || 'Unknown Year'})`,
+          error,
+        );
       }
     }
   }

@@ -15,7 +15,8 @@ export const get_config_path = (): string => {
     case 'linux':
       return join(homedir(), '.config', config_name);
     default:
-      if (platform().startsWith('win')) return join(homedir(), 'AppData', 'Roaming', config_name);
+      if (platform().startsWith('win'))
+        return join(homedir(), 'AppData', 'Roaming', config_name);
       return join(homedir(), '.config', config_name);
   }
 };
@@ -24,7 +25,8 @@ export const ensure_app_folders = (): void => {
   const config_path = get_config_path();
   const libraries_path = join(config_path, LIBRARIES_PATH);
   if (!existsSync(config_path)) mkdirSync(config_path, { recursive: true });
-  if (!existsSync(libraries_path)) mkdirSync(libraries_path, { recursive: true });
+  if (!existsSync(libraries_path))
+    mkdirSync(libraries_path, { recursive: true });
 };
 
 export const load_config = (): IConfig | null => {
@@ -38,7 +40,7 @@ export const load_config = (): IConfig | null => {
 
   const config = readFileSync(join(config_path, CONFIG_FILENAME), 'utf-8');
   return parse(config) as IConfig;
-}
+};
 
 export const save_config = (config: IConfig) => {
   const config_path = get_config_path();
