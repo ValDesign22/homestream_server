@@ -2,10 +2,9 @@ import 'dotenv/config';
 
 import { NuxumApp } from '@nuxum/core';
 
-import { AppModule } from './modules/app.module';
-
-import { ConfigMiddleware } from './middlewares/config.middleware';
-import { ensure_app_folders } from './services/config.service';
+import { AppModule } from '#/modules/app.module';
+import { ConfigMiddleware } from '#/middlewares/config.middleware';
+import { ensure_app_folders } from '#/services/config.service';
 
 async function bootstrap() {
   ensure_app_folders();

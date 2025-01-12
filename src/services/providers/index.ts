@@ -1,5 +1,5 @@
-import { IMovie, ITvShow } from '../../utils/types/interfaces.util';
-import { tmdb_search } from './tmdb/index';
+import { IMovie, ITvShow } from '#/utils/types/interfaces.util';
+import { tmdb_search } from '#/services/providers/tmdb/index';
 
 export const search = async (
   query: string,

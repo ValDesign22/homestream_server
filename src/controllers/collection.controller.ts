@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nuxum/core';
 import { Request, Response } from 'express';
-import { get_collection } from '../services/library/collection.service';
+import { get_collection } from '#/services/library/collection.service';
 
 @Controller('/collection')
 export class CollectionController {

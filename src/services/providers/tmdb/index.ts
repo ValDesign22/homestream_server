@@ -1,13 +1,9 @@
 import axios, { AxiosResponse } from 'axios';
-import { load_config } from '../../config.service';
-import logger from '../../logger.service';
-import { TMDB_API_KEY } from '../../../utils/constants.util';
-import { IMovie, ITvShow } from '../../../utils/types/interfaces.util';
-import {
-  ITmdbGenre,
-  ITmdbMovie,
-  ITmdbTvShow,
-} from '../../../utils/types/tmdb.types';
+import { load_config } from '#/services/config.service';
+import logger from '#/services/logger.service';
+import { TMDB_API_KEY } from '#/utils/constants.util';
+import { IMovie, ITvShow } from '#/utils/types/interfaces.util';
+import { ITmdbGenre, ITmdbMovie, ITmdbTvShow } from '#/utils/types/tmdb.types';
 
 export const tmdb_request = async (
   path: string,

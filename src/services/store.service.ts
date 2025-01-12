@@ -7,11 +7,11 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
-import { get_library_path } from './library/index';
-import { METADATA_FILENAME } from '../utils/constants.util';
-import { EMediaType } from '../utils/types/enums.util';
-import { IFolder, IMovie, ITvShow } from '../utils/types/interfaces.util';
-import logger from './logger.service';
+import { get_library_path } from '#/services/library/index';
+import logger from '#/services/logger.service';
+import { METADATA_FILENAME } from '#/utils/constants.util';
+import { EMediaType } from '#/utils/types/enums.util';
+import { IFolder, IMovie, ITvShow } from '#/utils/types/interfaces.util';
 
 export const get_item = (
   folder: IFolder,

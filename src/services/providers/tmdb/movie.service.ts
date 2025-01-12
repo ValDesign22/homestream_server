@@ -1,6 +1,7 @@
 import { distance } from 'fastest-levenshtein';
-import { tmdb_request } from '.';
-import { IGenre, IMovie } from '../../../utils/types/interfaces.util';
+import { tmdb_request } from '#/services/providers/tmdb/index';
+import { IGenre, IMovie } from '#/utils/types/interfaces.util';
+import { ITmdbGenre } from '#/utils/types/tmdb.types';
 
 export const search_movie = async (
   title: string,
@@ -28,7 +29,7 @@ export const search_movie = async (
   if (!movie_response) return null;
 
   const genres: IGenre[] = movie_response.genres
-    ? movie_response.genres.map((genre: { id: number; name: string }) => {
+    ? movie_response.genres.map((genre: ITmdbGenre) => {
         return {
           id: genre.id,
           name: genre.name,

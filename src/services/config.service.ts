@@ -2,8 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir, platform } from 'node:os';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
-import { CONFIG_FILENAME, LIBRARIES_PATH } from '../utils/constants.util';
-import { IConfig } from '../utils/types/interfaces.util';
+import { CONFIG_FILENAME, LIBRARIES_PATH } from '#/utils/constants.util';
+import { IConfig } from '#/utils/types/interfaces.util';
 
 export const get_config_path = (): string => {
   const config_name = 'homestream_server';

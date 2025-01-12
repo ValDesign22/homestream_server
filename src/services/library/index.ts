@@ -1,14 +1,14 @@
 import { createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import axios from 'axios';
-import { analyze_collections } from './collection.service';
-import { analyze_movies } from './movie.service';
-import { analyze_tvshows } from './tv.service';
-import { get_config_path } from '../config.service';
-import logger from '../logger.service';
-import { LIBRARIES_PATH } from '../../utils/constants.util';
-import { EMediaType } from '../../utils/types/enums.util';
-import { IConfig, IFolder } from '../../utils/types/interfaces.util';
+import { analyze_collections } from '#/services/library/collection.service';
+import { analyze_movies } from '#/services/library/movie.service';
+import { analyze_tvshows } from '#/services/library/tv.service';
+import { get_config_path } from '#/services/config.service';
+import logger from '#/services/logger.service';
+import { LIBRARIES_PATH } from '#/utils/constants.util';
+import { EMediaType } from '#/utils/types/enums.util';
+import { IConfig, IFolder } from '#/utils/types/interfaces.util';
 
 export const get_library_path = (folder: IFolder): string => {
   const libraries_path = join(

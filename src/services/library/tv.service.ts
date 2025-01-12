@@ -1,4 +1,4 @@
-import { IConfig, IFolder } from '../../utils/types/interfaces.util';
+import { IConfig, IFolder } from '#/utils/types/interfaces.util';
 
 const parse_tvshow_filename = (
   filename: string,

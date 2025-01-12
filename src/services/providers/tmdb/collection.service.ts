@@ -1,5 +1,5 @@
-import { tmdb_request } from '.';
-import { IMovieCollection } from '../../../utils/types/interfaces.util';
+import { tmdb_request } from '#/services/providers/tmdb/index';
+import { IMovieCollection } from '#/utils/types/interfaces.util';
 
 export const search_collection = async (
   id: number,

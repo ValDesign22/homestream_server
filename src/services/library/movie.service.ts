@@ -1,18 +1,18 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { load_config } from '../config.service';
-import { get_item, load_store, store_item } from '../store.service';
+import { load_config } from '#/services/config.service';
+import { get_item, load_store, store_item } from '#/services/store.service';
 import {
   BACKDROP_FILENAME,
   LOGO_FILENAME,
   POSTER_FILENAME,
   VIDEO_EXTENSIONS,
-} from '../../utils/constants.util';
-import { EImageType, EMediaType } from '../../utils/types/enums.util';
-import { IConfig, IFolder, IMovie } from '../../utils/types/interfaces.util';
-import logger from '../logger.service';
-import { search_movie } from '../providers/tmdb/movie.service';
-import { download_images_concurrently } from '.';
+} from '#/utils/constants.util';
+import { EImageType, EMediaType } from '#/utils/types/enums.util';
+import { IConfig, IFolder, IMovie } from '#/utils/types/interfaces.util';
+import logger from '#/services/logger.service';
+import { search_movie } from '#/services/providers/tmdb/movie.service';
+import { download_images_concurrently } from '#/services/library/index';
 
 export const get_movie_image = (
   folder: IFolder,

@@ -1,23 +1,23 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
-import { get_config_path } from '../config.service';
-import { load_store } from '../store.service';
-import logger from '../logger.service';
-import { search_collection } from '../providers/tmdb/collection.service';
+import { get_config_path } from '#/services/config.service';
+import { load_store } from '#/services/store.service';
+import logger from '#/services/logger.service';
+import { search_collection } from '#/services/providers/tmdb/collection.service';
 import {
   BACKDROP_FILENAME,
   COLLECTIONS_PATH,
   METADATA_FILENAME,
   POSTER_FILENAME,
-} from '../../utils/constants.util';
+} from '#/utils/constants.util';
 import {
   IConfig,
   IFolder,
   IMovie,
   IMovieCollection,
-} from '../../utils/types/interfaces.util';
-import { download_images_concurrently } from '.';
+} from '#/utils/types/interfaces.util';
+import { download_images_concurrently } from '#/services/library/index';
 
 const get_collections_path = (): string => {
   const collections_path = join(get_config_path(), COLLECTIONS_PATH);

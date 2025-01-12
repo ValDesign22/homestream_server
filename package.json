@@ -14,7 +14,8 @@
     "start:prod": "pm2 start dist/index.js --name HomeStream",
     "stop:prod": "pm2 stop HomeStream",
     "restart:prod": "pm2 restart HomeStream",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "prettier . --write --ignore-unknown"
   },
   "lint-staged": {
     "**/*": [
