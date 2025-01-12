@@ -133,17 +133,26 @@ export const analyze_movies = async (
 
           const movie = get_item(folder, tmdb_movie.id);
           if (movie && save_images) {
-            if (tmdb_movie.backdrop_path)
+            if (
+              tmdb_movie.backdrop_path &&
+              !get_movie_image(folder, tmdb_movie.id, EImageType.Backdrop)
+            )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
                 path: join(movie.path, BACKDROP_FILENAME),
               });
-            if (tmdb_movie.logo_path)
+            if (
+              tmdb_movie.logo_path &&
+              !get_movie_image(folder, tmdb_movie.id, EImageType.Logo)
+            )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
                 path: join(movie.path, LOGO_FILENAME),
               });
-            if (tmdb_movie.poster_path)
+            if (
+              tmdb_movie.poster_path &&
+              !get_movie_image(folder, tmdb_movie.id, EImageType.Poster)
+            )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
                 path: join(movie.path, POSTER_FILENAME),
@@ -157,8 +166,8 @@ export const analyze_movies = async (
       } catch (error) {
         logger.error(
           `Failed to search for movie: ${full_path}\n${title} (${year || 'Unknown Year'})`,
-          error,
         );
+        logger.error(error);
       }
     }
   }
