@@ -5,11 +5,21 @@ import { analyze_library } from '#/services/library';
 
 @Controller('/analyze')
 export class AnalyzeController {
-  @Get()
-  public async get(_: Request, res: Response) {
+  @Get({
+    query: [
+      {
+        name: 'library',
+        type: 'number',
+        required: false,
+      },
+    ],
+  })
+  public async get(req: Request, res: Response) {
     const config = load_config()!;
+    const library_id = req.query.library as number | undefined;
 
     for (const folder of config.folders) {
+      if (library_id && folder.id !== library_id) continue;
       console.log(`Analyzing library ${folder.name}...`);
       await analyze_library(folder, config);
       console.log(`Library ${folder.name} analyzed`);

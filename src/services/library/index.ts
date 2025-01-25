@@ -9,6 +9,9 @@ import logger from '#/services/logger.service';
 import { LIBRARIES_PATH } from '#/utils/constants.util';
 import { EMediaType } from '#/utils/types/enums.util';
 import { IConfig, IFolder } from '#/utils/types/interfaces.util';
+import pLimit from 'p-limit';
+
+const limit = pLimit(5);
 
 export const get_library_path = (folder: IFolder): string => {
   const libraries_path = join(
@@ -53,11 +56,10 @@ export const download_image = async (
 export const download_images_concurrently = async (
   images: { url: string; path: string }[],
 ): Promise<void> => {
+  console.log(images.length);
   try {
     await Promise.all(
-      images.map(async ({ url, path }) => {
-        await download_image(url, path);
-      }),
+      images.map((image) => limit(() => download_image(image.url, image.path))),
     );
   } catch (error) {
     logger.error('Failed to download images concurrently:', error);

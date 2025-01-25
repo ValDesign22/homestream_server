@@ -40,38 +40,26 @@ export const get_tvshow_image = (
   const item = get_item(folder, id);
   if (!item) return null;
 
-  const image_path = join(
-    item.path,
-    image_type === EImageType.Backdrop
-      ? BACKDROP_FILENAME
-      : image_type === EImageType.Logo
-        ? LOGO_FILENAME
-        : POSTER_FILENAME,
-  );
+  const filename_map = {
+    [EImageType.Backdrop]: BACKDROP_FILENAME,
+    [EImageType.Logo]: LOGO_FILENAME,
+    [EImageType.Poster]: POSTER_FILENAME,
+  };
 
+  const metadata_map = {
+    [EImageType.Backdrop]: item.metadata.backdrop_path,
+    [EImageType.Logo]: item.metadata.logo_path,
+    [EImageType.Poster]: item.metadata.poster_path,
+  };
+
+  const image_path = join(item.path, filename_map[image_type]);
   const exists = existsSync(image_path);
-  switch (image_type) {
-    case EImageType.Backdrop:
-      return exists
-        ? image_path
-        : item.metadata.backdrop_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.backdrop_path}`
-          : null;
-    case EImageType.Logo:
-      return exists
-        ? image_path
-        : item.metadata.logo_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.logo_path}`
-          : null;
-    case EImageType.Poster:
-      return exists
-        ? image_path
-        : item.metadata.poster_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.poster_path}`
-          : null;
-    default:
-      return null;
-  }
+
+  return exists
+    ? image_path
+    : metadata_map[image_type]
+      ? `https://image.tmdb.org/t/p/original${metadata_map[image_type]}`
+      : null;
 };
 
 export const get_season_image = (
@@ -85,7 +73,7 @@ export const get_season_image = (
   } | null;
   if (!item) return null;
 
-  const season = item.metadata.seasons.find(
+  const season = item.metadata.metadata.seasons.find(
     (season) => season.season_number === season_number,
   );
   if (!season) return null;
@@ -116,7 +104,7 @@ export const get_episode_image = (
   } | null;
   if (!item) return null;
 
-  const season = item.metadata.seasons.find(
+  const season = item.metadata.metadata.seasons.find(
     (season) => season.season_number === season_number,
   );
   if (!season) return null;
@@ -147,14 +135,13 @@ export const get_tvshow = (
   const config = load_config();
   if (!config) return null;
 
-  for (const folder of config.folders) {
-    if (folder.media_type === EMediaType.TvShows) {
-      const tvshow = get_item(folder, id);
-      if (tvshow) return tvshow as { path: string; metadata: ITvShow };
-    }
-  }
-
-  return null;
+  const folder = config.folders.find(
+    (folder) =>
+      folder.media_type === EMediaType.TvShows && get_item(folder, id),
+  );
+  return folder
+    ? (get_item(folder, id) as { path: string; metadata: ITvShow })
+    : null;
 };
 
 export const get_tvshow_season = (
@@ -272,7 +259,20 @@ export const analyze_tvshows = async (
       try {
         const tmdb_tvshow = await search_tvshow(title, year);
         if (!tmdb_tvshow) continue;
-        if (!get_item(folder, tmdb_tvshow.id)) store_item(folder, tmdb_tvshow);
+        if (!get_item(folder, tmdb_tvshow.id))
+          store_item(folder, {
+            metadata: {
+              ...tmdb_tvshow,
+              seasons: [],
+            },
+            media_type: EMediaType.TvShows,
+            backdrop_path: tmdb_tvshow.backdrop_path,
+            logo_path:
+              tmdb_tvshow.images.logos && tmdb_tvshow.images.logos.length > 0
+                ? tmdb_tvshow.images.logos[0].file_path
+                : null,
+            poster_path: tmdb_tvshow.poster_path,
+          });
 
         const tvshow = get_item(folder, tmdb_tvshow.id) as {
           path: string;
@@ -286,7 +286,13 @@ export const analyze_tvshows = async (
         );
         if (!tmdb_season) continue;
         if (!get_tvshow_season(tmdb_tvshow.id, tmdb_season.season_number))
-          store_tvshow_season(folder, tmdb_tvshow.id, tmdb_season);
+          store_tvshow_season(folder, tmdb_tvshow.id, {
+            metadata: {
+              ...tmdb_season,
+              episodes: [],
+            },
+            poster_path: tmdb_season.poster_path,
+          });
 
         const tvshow_season = get_tvshow_season(
           tmdb_tvshow.id,
@@ -307,11 +313,11 @@ export const analyze_tvshows = async (
             tmdb_episode.episode_number,
           )
         )
-          store_tvshow_episode(
-            tmdb_tvshow.id,
-            tmdb_season.season_number,
-            tmdb_episode,
-          );
+          store_tvshow_episode(tmdb_tvshow.id, tmdb_season.season_number, {
+            metadata: tmdb_episode,
+            path: current_path,
+            still_path: tmdb_episode.still_path,
+          });
 
         const tvshow_episode = get_tvshow_episode(
           tmdb_tvshow.id,
@@ -322,39 +328,39 @@ export const analyze_tvshows = async (
 
         if (save_images) {
           if (
-            tmdb_tvshow.backdrop_path &&
+            tvshow.metadata.backdrop_path &&
             !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Backdrop)
           )
             images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_tvshow.backdrop_path}`,
+              url: `https://image.tmdb.org/t/p/original${tvshow.metadata.backdrop_path}`,
               path: join(tvshow.path, BACKDROP_FILENAME),
             });
           if (
-            tmdb_tvshow.logo_path &&
+            tvshow.metadata.logo_path &&
             !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Logo)
           )
             images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_tvshow.logo_path}`,
+              url: `https://image.tmdb.org/t/p/original${tvshow.metadata.logo_path}`,
               path: join(tvshow.path, LOGO_FILENAME),
             });
           if (
-            tmdb_tvshow.poster_path &&
+            tvshow.metadata.poster_path &&
             !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Poster)
           )
             images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_tvshow.poster_path}`,
+              url: `https://image.tmdb.org/t/p/original${tvshow.metadata.poster_path}`,
               path: join(tvshow.path, POSTER_FILENAME),
             });
           if (
-            tmdb_season.poster_path &&
+            tvshow_season.metadata.poster_path &&
             !get_season_image(folder, tmdb_tvshow.id, tmdb_season.season_number)
           )
             images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_season.poster_path}`,
+              url: `https://image.tmdb.org/t/p/original${tvshow_season.metadata.poster_path}`,
               path: join(tvshow_season.path, POSTER_FILENAME),
             });
           if (
-            tmdb_episode.still_path &&
+            tvshow_episode.metadata.still_path &&
             !get_episode_image(
               folder,
               tmdb_tvshow.id,
@@ -363,30 +369,36 @@ export const analyze_tvshows = async (
             )
           )
             images.push({
-              url: `https://image.tmdb.org/t/p/original${tmdb_episode.still_path}`,
+              url: `https://image.tmdb.org/t/p/original${tvshow_episode.metadata.still_path}`,
               path: join(tvshow_episode.path, STILL_FILENAME),
             });
         }
 
-        store_tvshow_season(folder, tmdb_tvshow.id, {
-          ...tvshow_season.metadata,
-          episodes: [...tvshow_season.metadata.episodes, tmdb_episode],
-        });
+        // store_tvshow_season(folder, tmdb_tvshow.id, {
+        //   ...tvshow_season.metadata,
+        //   metadata: {
+        //     episodes: tvshow_season.metadata.metadata.episodes.map((episode) =>
+        //       episode.episode_number === tmdb_episode.episode_number
+        //         ? tvshow_episode.metadata
+        //         : episode,
+        //     ),
+        //   }
+        // });
 
-        const edited_season = get_tvshow_season(
-          tmdb_tvshow.id,
-          tmdb_season.season_number,
-        );
-        if (!edited_season) continue;
+        // const edited_season = get_tvshow_season(
+        //   tmdb_tvshow.id,
+        //   tmdb_season.season_number,
+        // );
+        // if (!edited_season) continue;
 
-        store_item(folder, {
-          ...tvshow.metadata,
-          seasons: tvshow.metadata.seasons.map((season) =>
-            season.season_number === tmdb_season.season_number
-              ? edited_season.metadata
-              : season,
-          ),
-        });
+        // store_item(folder, {
+        //   ...tvshow.metadata,
+        //   seasons: tvshow.metadata.seasons.map((season) =>
+        //     season.season_number === tmdb_season.season_number
+        //       ? edited_season.metadata
+        //       : season,
+        //   ),
+        // });
 
         logger.info(
           `Analyzed tvshow: ${full_path}\n${title} (${year || 'Unknown Year'}) S${season}E${episode}`,

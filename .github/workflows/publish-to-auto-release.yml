@@ -31,8 +31,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HOMESTREAM_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          name: HomeStream Server ${{ github.ref }}
-          body: 'New release of HomeStream Server ${{ github.ref }}'
+          name: NestPlay Server ${{ github.ref }}
+          body: 'New release of NestPlay Server ${{ github.ref }}'
           files: ./update.tar.gz
           generate_release_notes: true
           draft: true

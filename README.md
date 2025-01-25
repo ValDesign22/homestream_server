@@ -1,10 +1,10 @@
-# HomeStream Server
+# NestPlay Server
 
-HomeStream Server is the backend for the [HomeStream](https://github.com/ValDesign22/homestream_client) project.
+NestPlay Server is the backend for the [NestPlay](https://github.com/ValDesign22/nestplay_client) project.
 
 It lets you stream your media files seamlessly across devices on your local network (or even remotely).
 
-HomeStream is built with [Nuxum](https://github.com/nuxum/nuxum), a simple and lightweight express server framework. Both projects are open-source and free to use.
+NestPlay is built with [Nuxum](https://github.com/nuxum/nuxum), a simple and lightweight express server framework. Both projects are open-source and free to use.
 
 ## Features
 
@@ -26,8 +26,8 @@ To install and run the server from source:
 1. Clone the repository
 
 ```bash
-git clone https://github.com/ValDesign22/homestream_server.git
-cd homestream_server
+git clone https://github.com/ValDesign22/nestplay_server.git
+cd nestplay_server
 ```
 
 2. Install the dependencies
@@ -52,7 +52,7 @@ npm start
 
 To install and run the server from a pre-built release:
 
-1. Download the latest release from the [releases page](https://github.com/ValDesign22/homestream_server/releases)
+1. Download the latest release from the [releases page](https://github.com/ValDesign22/nestplay_server/releases)
 2. Extract the files and navigate to the extracted folder
 3. Install the dependencies
 
@@ -81,7 +81,7 @@ WATCH_DIR=SERVER_WATCH_DIR # The directory the server will watch for new files
 ## Usage
 
 1. Start the server
-2. Open the [client](https://github.com/ValDesign22/homestream_client)
+2. Open the [client](https://github.com/ValDesign22/nestplay_client)
 3. Connect to the server
 4. Enjoy your media
 

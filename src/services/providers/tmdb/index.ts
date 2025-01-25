@@ -2,8 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import { load_config } from '#/services/config.service';
 import logger from '#/services/logger.service';
 import { TMDB_API_KEY } from '#/utils/constants.util';
-import { IMovie, ITvShow } from '#/utils/types/interfaces.util';
-import { ITmdbGenre, ITmdbMovie, ITmdbTvShow } from '#/utils/types/tmdb.types';
+import { ITmdbMovie, ITmdbTvShow } from '#/utils/types/tmdb.types';
 
 export const tmdb_request = async (
   path: string,
@@ -39,60 +38,8 @@ export const tmdb_request = async (
 
 export const tmdb_search = async (
   query: string,
-  type: string,
-): Promise<IMovie[] | ITvShow[]> => {
+  type: 'movie' | 'tv',
+): Promise<ITmdbMovie[] | ITmdbTvShow[]> => {
   const response = await tmdb_request(`/search/${type}`, { query });
-  if (!response || !response.results || response.results.length === 0)
-    return [];
-
-  switch (type) {
-    case 'movie':
-      return response.results.map((movie: ITmdbMovie) => {
-        return {
-          id: movie.id,
-          collection_id: movie.belongs_to_collection
-            ? movie.belongs_to_collection.id
-            : null,
-          title: movie.title,
-          original_title: movie.original_title,
-          overview: movie.overview,
-          poster_path: movie.poster_path,
-          backdrop_path: movie.backdrop_path,
-          logo_path: null,
-          release_date: movie.release_date,
-          runtime: movie.runtime,
-          genres: movie.genres
-            ? movie.genres.map((genre: ITmdbGenre) => {
-                return {
-                  id: genre.id,
-                  name: genre.name,
-                };
-              })
-            : [],
-        };
-      }) as IMovie[];
-    case 'tv':
-      return response.results.map((tv_show: ITmdbTvShow) => {
-        return {
-          id: tv_show.id,
-          title: tv_show.name,
-          original_title: tv_show.original_name,
-          overview: tv_show.overview,
-          poster_path: tv_show.poster_path,
-          backdrop_path: tv_show.backdrop_path,
-          logo_path: null,
-          genres: tv_show.genres
-            ? tv_show.genres.map((genre: ITmdbGenre) => {
-                return {
-                  id: genre.id,
-                  name: genre.name,
-                };
-              })
-            : [],
-          seasons: [],
-        };
-      }) as ITvShow[];
-    default:
-      return [];
-  }
+  return response?.results ?? [];
 };

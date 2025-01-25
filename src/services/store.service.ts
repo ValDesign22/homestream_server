@@ -55,7 +55,10 @@ export const get_item = (
 
 export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
   try {
-    const item_path = join(get_library_path(folder), item.id.toString());
+    const item_path = join(
+      get_library_path(folder),
+      item.metadata.id.toString(),
+    );
 
     if (!existsSync(item_path)) mkdirSync(item_path, { recursive: true });
 
@@ -64,7 +67,7 @@ export const store_item = (folder: IFolder, item: IMovie | ITvShow): void => {
 
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
-    logger.error(`Failed to store item with ID ${item.id}:`, err);
+    logger.error(`Failed to store item with ID ${item.metadata.id}:`, err);
   }
 };
 
@@ -79,7 +82,7 @@ export const store_tvshow_season = (
 
     const season_path = join(
       tvshow.path,
-      season.season_number.toString().padStart(2, '0'),
+      season.metadata.season_number.toString().padStart(2, '0'),
     );
     if (!existsSync(season_path)) mkdirSync(season_path, { recursive: true });
 
@@ -88,7 +91,10 @@ export const store_tvshow_season = (
 
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
-    logger.error(`Failed to store tvshow season with ID ${season.id}:`, err);
+    logger.error(
+      `Failed to store tvshow season with ID ${season.metadata.id}:`,
+      err,
+    );
   }
 };
 
@@ -103,7 +109,7 @@ export const store_tvshow_episode = (
 
     const episode_path = join(
       season.path,
-      episode.episode_number.toString().padStart(2, '0'),
+      episode.metadata.episode_number.toString().padStart(2, '0'),
     );
     if (!existsSync(episode_path)) mkdirSync(episode_path, { recursive: true });
 
@@ -112,7 +118,10 @@ export const store_tvshow_episode = (
 
     writeFileSync(metadata_path, metadataContent);
   } catch (err) {
-    logger.error(`Failed to store tvshow episode with ID ${episode.id}:`, err);
+    logger.error(
+      `Failed to store tvshow episode with ID ${episode.metadata.id}:`,
+      err,
+    );
   }
 };
 

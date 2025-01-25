@@ -6,7 +6,7 @@ import { CONFIG_FILENAME, LIBRARIES_PATH } from '#/utils/constants.util';
 import { IConfig } from '#/utils/types/interfaces.util';
 
 export const get_config_path = (): string => {
-  const config_name = 'homestream_server';
+  const config_name = 'nestplay_server';
   switch (platform()) {
     case 'win32':
       return join(homedir(), 'AppData', 'Roaming', config_name);

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { load_config } from '#/services/config.service';
 import { get_item, load_store, store_item } from '#/services/store.service';
@@ -22,64 +22,46 @@ export const get_movie_image = (
   const item = get_item(folder, id);
   if (!item) return null;
 
-  const image_path = join(
-    item.path,
-    image_type === EImageType.Backdrop
-      ? BACKDROP_FILENAME
-      : image_type === EImageType.Logo
-        ? LOGO_FILENAME
-        : POSTER_FILENAME,
-  );
+  const filename_map = {
+    [EImageType.Backdrop]: BACKDROP_FILENAME,
+    [EImageType.Logo]: LOGO_FILENAME,
+    [EImageType.Poster]: POSTER_FILENAME,
+  };
 
+  const metadata_map = {
+    [EImageType.Backdrop]: item.metadata.backdrop_path,
+    [EImageType.Logo]: item.metadata.logo_path,
+    [EImageType.Poster]: item.metadata.poster_path,
+  };
+
+  const image_path = join(item.path, filename_map[image_type]);
   const exists = existsSync(image_path);
-  switch (image_type) {
-    case EImageType.Backdrop:
-      return exists
-        ? image_path
-        : item.metadata.backdrop_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.backdrop_path}`
-          : null;
-    case EImageType.Logo:
-      return exists
-        ? image_path
-        : item.metadata.logo_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.logo_path}`
-          : null;
-    case EImageType.Poster:
-      return exists
-        ? image_path
-        : item.metadata.poster_path
-          ? `https://image.tmdb.org/t/p/original${item.metadata.poster_path}`
-          : null;
-    default:
-      return null;
-  }
+
+  return exists
+    ? image_path
+    : metadata_map[image_type]
+      ? `https://image.tmdb.org/t/p/original${metadata_map[image_type]}`
+      : null;
 };
 
 export const get_movie = (id: number): IMovie | null => {
   const config = load_config();
   if (!config) return null;
 
-  for (const folder of config.folders) {
-    if (folder.media_type === EMediaType.Movies) {
-      const movie = get_item(folder, id);
-      if (movie) return movie.metadata as IMovie;
-    }
-  }
-
-  return null;
+  const folder = config.folders.find(
+    (folder) => folder.media_type === EMediaType.Movies && get_item(folder, id),
+  );
+  return folder ? (get_item(folder, id)?.metadata as IMovie) : null;
 };
 
 const parse_movie_filename = (
   filename: string,
 ): { title: string; year: string | null } => {
-  const regex = /^(.*?)(?:\s+(\d{4}))?$/;
-  const match = filename.match(regex);
+  const match = filename.match(/^(.*?)(?:\s+(\d{4}))?$/);
 
   if (!match) return { title: filename, year: null };
 
-  const title = match[1].trim();
-  const year = match[2] || null;
+  const [, title, year] = match;
 
   return { title, year };
 };
@@ -127,34 +109,42 @@ export const analyze_movies = async (
         if (tmdb_movie) {
           if (!get_item(folder, tmdb_movie.id))
             store_item(folder, {
-              ...tmdb_movie,
-              path: full_path,
+              metadata: tmdb_movie,
+              path: current_path,
+              media_type: EMediaType.Movies,
+              backdrop_path: tmdb_movie.backdrop_path || null,
+              logo_path:
+                tmdb_movie.images.logos && tmdb_movie.images.logos.length > 0
+                  ? tmdb_movie.images.logos[0].file_path
+                  : null,
+              poster_path: tmdb_movie.poster_path || null,
+              added_at: statSync(current_path).birthtime.toISOString(),
             });
 
           const movie = get_item(folder, tmdb_movie.id);
           if (movie && save_images) {
             if (
-              tmdb_movie.backdrop_path &&
+              movie.metadata.backdrop_path &&
               !get_movie_image(folder, tmdb_movie.id, EImageType.Backdrop)
             )
               images.push({
-                url: `https://image.tmdb.org/t/p/original${tmdb_movie.backdrop_path}`,
+                url: `https://image.tmdb.org/t/p/original${movie.metadata.backdrop_path}`,
                 path: join(movie.path, BACKDROP_FILENAME),
               });
             if (
-              tmdb_movie.logo_path &&
+              movie.metadata.logo_path &&
               !get_movie_image(folder, tmdb_movie.id, EImageType.Logo)
             )
               images.push({
-                url: `https://image.tmdb.org/t/p/original${tmdb_movie.logo_path}`,
+                url: `https://image.tmdb.org/t/p/original${movie.metadata.logo_path}`,
                 path: join(movie.path, LOGO_FILENAME),
               });
             if (
-              tmdb_movie.poster_path &&
+              movie.metadata.poster_path &&
               !get_movie_image(folder, tmdb_movie.id, EImageType.Poster)
             )
               images.push({
-                url: `https://image.tmdb.org/t/p/original${tmdb_movie.poster_path}`,
+                url: `https://image.tmdb.org/t/p/original${movie.metadata.poster_path}`,
                 path: join(movie.path, POSTER_FILENAME),
               });
           }

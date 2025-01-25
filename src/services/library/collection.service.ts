@@ -11,13 +11,9 @@ import {
   METADATA_FILENAME,
   POSTER_FILENAME,
 } from '#/utils/constants.util';
-import {
-  IConfig,
-  IFolder,
-  IMovie,
-  IMovieCollection,
-} from '#/utils/types/interfaces.util';
+import { IConfig, IFolder, IMovie } from '#/utils/types/interfaces.util';
 import { download_images_concurrently } from '#/services/library/index';
+import { ITmdbMovieCollection } from '#/utils/types/tmdb.types';
 
 const get_collections_path = (): string => {
   const collections_path = join(get_config_path(), COLLECTIONS_PATH);
@@ -26,7 +22,7 @@ const get_collections_path = (): string => {
   return collections_path;
 };
 
-export const get_collection = (id: number): IMovieCollection | null => {
+export const get_collection = (id: number): ITmdbMovieCollection | null => {
   try {
     const collections_path = join(get_config_path(), COLLECTIONS_PATH);
     if (!existsSync(collections_path))
@@ -41,14 +37,14 @@ export const get_collection = (id: number): IMovieCollection | null => {
     const metadataContent = readFileSync(metadata_path, 'utf-8');
     const metadata = parse(metadataContent);
 
-    return metadata as IMovieCollection;
+    return metadata as ITmdbMovieCollection;
   } catch (err) {
     logger.error(`Failed to get collection with ID ${id}:`, err);
     return null;
   }
 };
 
-export const store_collection = (collection: IMovieCollection): void => {
+export const store_collection = (collection: ITmdbMovieCollection): void => {
   try {
     const collections_path = join(get_config_path(), 'collections');
     if (!existsSync(collections_path))
@@ -77,21 +73,26 @@ export const analyze_collections = async (
 
   for (const movie of movies) {
     if (
+      movie.metadata.metadata.belongs_to_collection &&
       movies.filter(
-        (m) => m.metadata.collection_id === movie.metadata.collection_id,
+        (m) =>
+          m.metadata.metadata.belongs_to_collection?.id ===
+          movie.metadata.metadata.belongs_to_collection?.id,
       ).length < 2
     )
       continue;
 
     if (
-      movie.metadata.collection_id &&
-      !collections.has(movie.metadata.collection_id)
+      movie.metadata.metadata.belongs_to_collection &&
+      !collections.has(movie.metadata.metadata.belongs_to_collection.id)
     ) {
       try {
-        let collection = get_collection(movie.metadata.collection_id);
+        let collection = get_collection(
+          movie.metadata.metadata.belongs_to_collection.id,
+        );
         if (!collection) {
           const tmdb_collection = await search_collection(
-            movie.metadata.collection_id,
+            movie.metadata.metadata.belongs_to_collection.id,
           );
           if (tmdb_collection) {
             store_collection(tmdb_collection);
@@ -120,7 +121,7 @@ export const analyze_collections = async (
             });
         }
 
-        collections.add(movie.metadata.collection_id);
+        collections.add(movie.metadata.metadata.belongs_to_collection.id);
       } catch (error) {
         console.error(`Failed to search for collection: ${movie.path}`, error);
       }

@@ -1,4 +1,10 @@
 import { EMediaType } from '#/utils/types/enums.util';
+import {
+  ITmdbMovie,
+  ITmdbTvShow,
+  ITmdbTvShowEpisode,
+  ITmdbTvShowSeason,
+} from './tmdb.types';
 
 export interface IConfig {
   files_folder: string;
@@ -17,58 +23,32 @@ export interface IFolder {
 }
 
 export interface IMovie {
-  id: number;
-  collection_id: number | null;
-  title: string;
-  original_title: string;
-  overview: string;
-  poster_path: string | null;
+  metadata: ITmdbMovie;
+  path: string;
+  media_type: EMediaType;
   backdrop_path: string | null;
   logo_path: string | null;
-  release_date: string;
-  runtime: number;
-  genres: IGenre[];
-  path: string | null;
-}
-
-export interface IMovieCollection {
-  id: number;
-  name: string;
-  overview: string;
   poster_path: string | null;
-  backdrop_path: string | null;
+  added_at: string;
 }
 
 export interface ITvShow {
-  id: number;
-  title: string;
-  original_title: string;
-  overview: string;
-  poster_path: string | null;
+  metadata: ITmdbTvShow;
+  media_type: EMediaType;
   backdrop_path: string | null;
   logo_path: string | null;
-  genres: IGenre[];
-  seasons: ITvShowSeason[];
+  poster_path: string | null;
 }
 
 export interface ITvShowSeason {
-  id: number;
-  season_number: number;
-  name: string;
-  overview: string;
-  episodes: ITvShowEpisode[];
+  metadata: ITmdbTvShowSeason;
   poster_path: string | null;
 }
 
 export interface ITvShowEpisode {
-  id: number;
-  episode_number: number;
-  title: string;
-  overview: string;
-  air_date: string;
-  still_path: string | null;
-  runtime: number;
+  metadata: ITmdbTvShowEpisode;
   path: string | null;
+  still_path: string | null;
 }
 
 export interface IGenre {
