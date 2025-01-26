@@ -35,8 +35,6 @@ export const download_image = async (
       responseType: 'stream',
     });
 
-    console.log(path);
-
     const writer = createWriteStream(path);
     response.data.pipe(writer);
 
