@@ -56,7 +56,7 @@ export const download_image = async (
 export const download_images_concurrently = async (
   images: { url: string; path: string }[],
 ): Promise<void> => {
-  console.log(images.length);
+  logger.info('Downloading images concurrently:', images);
   try {
     await Promise.all(
       images.map((image) => limit(() => download_image(image.url, image.path))),

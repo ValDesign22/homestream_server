@@ -36,7 +36,6 @@ export class MovieController {
     if (image.startsWith('http')) {
       logger.info(`Sending image from URL: ${image}`);
       const response = await axios.get(image, { responseType: 'arraybuffer' });
-      console.log(response);
       res.setHeader(
         'Content-Type',
         response.headers['content-type'] || 'image/jpeg',
