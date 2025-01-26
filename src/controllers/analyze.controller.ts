@@ -16,10 +16,10 @@ export class AnalyzeController {
   })
   public async get(req: Request, res: Response) {
     const config = load_config()!;
-    const library_id = req.query.library as number | undefined;
+    const library_id = req.query.library as string | undefined;
 
     for (const folder of config.folders) {
-      if (library_id && folder.id !== library_id) continue;
+      if (library_id && folder.id !== parseInt(library_id)) continue;
       console.log(`Analyzing library ${folder.name}...`);
       await analyze_library(folder, config);
       console.log(`Library ${folder.name} analyzed`);

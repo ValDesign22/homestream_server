@@ -6,6 +6,7 @@ import { SearchController } from '#/controllers/search.controller';
 import { StoresController } from '#/controllers/stores.controller';
 import { TestController } from '#/controllers/test.controller';
 import { MoviePlaybackController } from '#/controllers/playback/movie.controller';
+import { MovieController } from '#/controllers/movies/[id]/index.controller';
 
 @Module({
   controllers: [
@@ -13,6 +14,7 @@ import { MoviePlaybackController } from '#/controllers/playback/movie.controller
     CollectionController,
     FoldersController,
     MoviePlaybackController,
+    MovieController,
     SearchController,
     StoresController,
     TestController,

@@ -15,11 +15,10 @@ import { search_movie } from '#/services/providers/tmdb/movie.service';
 import { download_images_concurrently } from '#/services/library/index';
 
 export const get_movie_image = (
-  folder: IFolder,
   id: number,
   image_type: EImageType,
 ): string | null => {
-  const item = get_item(folder, id);
+  const item = get_movie(id);
   if (!item) return null;
 
   const filename_map = {
@@ -44,14 +43,18 @@ export const get_movie_image = (
       : null;
 };
 
-export const get_movie = (id: number): IMovie | null => {
+export const get_movie = (
+  id: number,
+): { metadata: IMovie; path: string } | null => {
   const config = load_config();
   if (!config) return null;
 
   const folder = config.folders.find(
     (folder) => folder.media_type === EMediaType.Movies && get_item(folder, id),
   );
-  return folder ? (get_item(folder, id)?.metadata as IMovie) : null;
+  return folder
+    ? (get_item(folder, id) as { metadata: IMovie; path: string })
+    : null;
 };
 
 const parse_movie_filename = (
@@ -123,9 +126,10 @@ export const analyze_movies = async (
 
           const movie = get_item(folder, tmdb_movie.id);
           if (movie && save_images) {
+            logger.info('Checking for missing images...');
             if (
               movie.metadata.backdrop_path &&
-              !get_movie_image(folder, tmdb_movie.id, EImageType.Backdrop)
+              !existsSync(join(movie.path, BACKDROP_FILENAME))
             )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${movie.metadata.backdrop_path}`,
@@ -133,7 +137,7 @@ export const analyze_movies = async (
               });
             if (
               movie.metadata.logo_path &&
-              !get_movie_image(folder, tmdb_movie.id, EImageType.Logo)
+              !existsSync(join(movie.path, LOGO_FILENAME))
             )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${movie.metadata.logo_path}`,
@@ -141,7 +145,7 @@ export const analyze_movies = async (
               });
             if (
               movie.metadata.poster_path &&
-              !get_movie_image(folder, tmdb_movie.id, EImageType.Poster)
+              !existsSync(join(movie.path, POSTER_FILENAME))
             )
               images.push({
                 url: `https://image.tmdb.org/t/p/original${movie.metadata.poster_path}`,

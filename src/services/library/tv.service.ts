@@ -329,7 +329,7 @@ export const analyze_tvshows = async (
         if (save_images) {
           if (
             tvshow.metadata.backdrop_path &&
-            !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Backdrop)
+            !existsSync(join(tvshow.path, BACKDROP_FILENAME))
           )
             images.push({
               url: `https://image.tmdb.org/t/p/original${tvshow.metadata.backdrop_path}`,
@@ -337,7 +337,7 @@ export const analyze_tvshows = async (
             });
           if (
             tvshow.metadata.logo_path &&
-            !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Logo)
+            !existsSync(join(tvshow.path, LOGO_FILENAME))
           )
             images.push({
               url: `https://image.tmdb.org/t/p/original${tvshow.metadata.logo_path}`,
@@ -345,7 +345,7 @@ export const analyze_tvshows = async (
             });
           if (
             tvshow.metadata.poster_path &&
-            !get_tvshow_image(folder, tmdb_tvshow.id, EImageType.Poster)
+            !existsSync(join(tvshow.path, POSTER_FILENAME))
           )
             images.push({
               url: `https://image.tmdb.org/t/p/original${tvshow.metadata.poster_path}`,
@@ -353,7 +353,7 @@ export const analyze_tvshows = async (
             });
           if (
             tvshow_season.metadata.poster_path &&
-            !get_season_image(folder, tmdb_tvshow.id, tmdb_season.season_number)
+            !existsSync(join(tvshow_season.path, POSTER_FILENAME))
           )
             images.push({
               url: `https://image.tmdb.org/t/p/original${tvshow_season.metadata.poster_path}`,
@@ -361,12 +361,7 @@ export const analyze_tvshows = async (
             });
           if (
             tvshow_episode.metadata.still_path &&
-            !get_episode_image(
-              folder,
-              tmdb_tvshow.id,
-              tmdb_season.season_number,
-              tmdb_episode.episode_number,
-            )
+            !existsSync(join(tvshow_episode.path, STILL_FILENAME))
           )
             images.push({
               url: `https://image.tmdb.org/t/p/original${tvshow_episode.metadata.still_path}`,
