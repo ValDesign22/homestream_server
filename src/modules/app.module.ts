@@ -8,6 +8,7 @@ import { TestController } from '#/controllers/test.controller';
 import { MoviePlaybackController } from '#/controllers/playback/movie.controller';
 import { MovieController } from '#/controllers/movies/[id]/index.controller';
 import { ConnectController } from '#/controllers/connect.controller';
+import { LibrariesController } from '#/controllers/libraries.controller';
 
 @Module({
   controllers: [
@@ -20,6 +21,7 @@ import { ConnectController } from '#/controllers/connect.controller';
     StoresController,
     TestController,
     ConnectController,
+    LibrariesController,
   ],
 })
 export class AppModule {}
