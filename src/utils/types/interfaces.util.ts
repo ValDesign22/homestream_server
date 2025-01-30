@@ -50,8 +50,3 @@ export interface ITvShowEpisode {
   path: string | null;
   still_path: string | null;
 }
-
-export interface IGenre {
-  id: number;
-  name: string;
-}
