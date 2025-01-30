@@ -1,7 +1,11 @@
 import { get_movie, get_movie_image } from '#/services/library/movie.service';
 import logger from '#/services/logger.service';
+import {
+  generate_trickplay,
+  get_trickplays,
+} from '#/services/trickplay.service';
 import { EImageType } from '#/utils/types/enums.util';
-import { Controller, Get } from '@nuxum/core';
+import { Controller, Get, Post } from '@nuxum/core';
 import axios from 'axios';
 import { Request, Response } from 'express';
 
@@ -9,7 +13,13 @@ import { Request, Response } from 'express';
 export class MovieController {
   @Get()
   public async get(req: Request, res: Response) {
-    return res.status(200).json({ message: 'Movie found' });
+    const { id } = req.params;
+
+    const movie = get_movie(parseInt(id));
+
+    if (!movie) return res.status(404).json({ message: 'Movie not found' });
+
+    return res.status(200).json(movie);
   }
 
   @Get('/images/:type')
@@ -48,5 +58,68 @@ export class MovieController {
     return res
       .status(200)
       .sendFile(image, { headers: { 'Content-Type': mime_type } });
+  }
+
+  @Get('/trickplay')
+  public async get_trickplays(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const movie = get_movie(parseInt(id));
+
+    if (!movie) return res.status(404).json({ message: 'Movie not found' });
+
+    const trickplay_images = get_trickplays(movie.path);
+
+    if (!trickplay_images.length)
+      return res.status(404).json({ message: 'Trickplay not found' });
+
+    return res.status(200).json(trickplay_images);
+  }
+
+  @Get('/trickplay/:index')
+  public async get_trickplay(req: Request, res: Response) {
+    const { id, index } = req.params;
+
+    const movie = get_movie(parseInt(id));
+
+    if (!movie) return res.status(404).json({ message: 'Movie not found' });
+
+    const trickplay_images = get_trickplays(movie.path);
+
+    if (!trickplay_images.length)
+      return res.status(404).json({ message: 'Trickplay not found' });
+
+    const image = trickplay_images[parseInt(index)];
+
+    if (!image) return res.status(404).json({ message: 'Image not found' });
+
+    return res
+      .status(200)
+      .sendFile(image, { headers: { 'Content-Type': 'image/jpeg' } });
+  }
+
+  @Post('/trickplay')
+  public async post_trickplay(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const movie = get_movie(parseInt(id));
+
+    if (!movie) return res.status(404).json({ message: 'Movie not found' });
+
+    logger.info(
+      `Generating trickplay for movie: ${movie.metadata.metadata.title}`,
+    );
+
+    await generate_trickplay(
+      movie.metadata.path,
+      movie.path,
+      10000,
+      { width: 320, height: 180 },
+      { rows: 10, cols: 10 },
+    );
+
+    logger.info('Trickplay generated');
+
+    return res.status(200).json({ message: 'Trickplay generated' });
   }
 }

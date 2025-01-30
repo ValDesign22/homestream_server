@@ -113,7 +113,7 @@ export const analyze_movies = async (
           if (!get_item(folder, tmdb_movie.id))
             store_item(folder, {
               metadata: tmdb_movie,
-              path: current_path,
+              path: join(current_path, item.name),
               media_type: EMediaType.Movies,
               backdrop_path: tmdb_movie.backdrop_path || null,
               logo_path:

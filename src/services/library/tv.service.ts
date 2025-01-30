@@ -315,7 +315,7 @@ export const analyze_tvshows = async (
         )
           store_tvshow_episode(tmdb_tvshow.id, tmdb_season.season_number, {
             metadata: tmdb_episode,
-            path: current_path,
+            path: join(current_path, item.name),
             still_path: tmdb_episode.still_path,
           });
 

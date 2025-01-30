@@ -31,6 +31,7 @@
   "dependencies": {
     "@nuxum/core": "^1.0.4",
     "axios": "^1.7.9",
+    "canvas": "^3.1.0",
     "chokidar": "^4.0.3",
     "dotenv": "^16.4.7",
     "fastest-levenshtein": "^1.0.16",
