@@ -36,18 +36,15 @@ export class MoviePlaybackController {
       }
     }
 
-    res.redirect(`/playback/movie/hls/${id}/720p`);
+    res.redirect(`/playback/movie/hls/${id}/720p.m3u8`);
   }
 
-  @Get('/hls/:id/:quality')
+  @Get('/hls/:id/:file')
   public async get_hls(req: Request, res: Response) {
-    const { id, quality } = req.params;
+    const { id, file } = req.params;
     const hls_output_dir = join(process.cwd(), HLS_OUTPUT_DIR, `movie_${id}`);
-    const playlist_path = join(hls_output_dir, `${quality}.m3u8`);
-    if (!existsSync(playlist_path))
-      return res.status(404).json({ message: 'Quality not found' });
+    const hls_file = join(hls_output_dir, file);
 
-    logger.info('Sending HLS playlist:', playlist_path);
-    return res.sendFile(playlist_path);
+    return res.sendFile(hls_file);
   }
 }
