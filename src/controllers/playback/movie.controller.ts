@@ -26,7 +26,7 @@ export class MoviePlaybackController {
 
       try {
         logger.info('Creating HLS stream for movie:', id);
-        await create_hls_stream(video_path, hls_output_dir);
+        create_hls_stream(video_path, hls_output_dir);
         logger.info('HLS stream created successfully');
       } catch (error) {
         logger.error('Error creating HLS stream:', error);
@@ -36,15 +36,19 @@ export class MoviePlaybackController {
       }
     }
 
-    res.redirect(`/playback/movie/hls/${id}/720p.m3u8`);
+    logger.info('Redirecting to HLS stream:', id);
+    res.redirect(`/playback/movie/hls/${id}/playlist.m3u8`);
   }
 
   @Get('/hls/:id/:file')
   public async get_hls(req: Request, res: Response) {
     const { id, file } = req.params;
     const hls_output_dir = join(process.cwd(), HLS_OUTPUT_DIR, `movie_${id}`);
-    const hls_file = join(hls_output_dir, file);
+    const file_path = join(hls_output_dir, file);
 
-    return res.sendFile(hls_file);
+    if (!existsSync(file_path))
+      return res.status(404).json({ message: 'HLS file not found' });
+
+    return res.sendFile(file_path);
   }
 }

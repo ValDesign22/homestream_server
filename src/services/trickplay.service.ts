@@ -3,7 +3,7 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
-  rmdirSync,
+  rmSync,
   unlinkSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -101,7 +101,7 @@ export const generate_trickplay = async (
   }
 
   logger.info('Cleaning up...');
-  rmdirSync(temp_dir, { recursive: true });
+  rmSync(temp_dir, { recursive: true });
   logger.info('Trickplay thumbnails generated!');
 };
 
